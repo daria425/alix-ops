@@ -1,8 +1,10 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.db_connection import db_connection
 from app.routes import service_status
 from app.utils.logger import logger
+from app.services.websocket_manager import WebsocketManager
+from app.core.internal_service_monitor import InternalServiceMonitor
 import asyncio
 
 async def lifespan(app: FastAPI):
@@ -10,13 +12,9 @@ async def lifespan(app: FastAPI):
     yield
     await db_connection.close()
 
+websocket_manager=WebsocketManager()
 app = FastAPI(lifespan=lifespan)
 
-# Use a set instead of a list for WebSocket clients
-clients = set()
-lock = asyncio.Lock()  # Prevent multiple threads modifying `clients` at once
-count=0
-# CORS configuration
 origins = ["http://localhost:5173"]
 
 app.add_middleware(
@@ -31,38 +29,35 @@ app.add_middleware(
 def root():
     return {"message": "Hello from FastAPI"}
 
-async def broadcast():
-    global count
-    while clients:
-            await asyncio.sleep(5)
-            count +=1
-            disconnected_clients = []
-            for client in clients:
-                try:
-                    logger.info(f"Sending update {count} 🚀")
-                    await client.send_text(f"Service Status Update {count}")
-                except WebSocketDisconnect:
-                    disconnected_clients.append(client)
+# async def broadcast():
+#     global count
+#     while clients:
+#             await asyncio.sleep(5)
+#             count +=1
+#             disconnected_clients = []
+#             for client in clients:
+#                 try:
+#                     logger.info(f"Sending update")
+#                     await client.send_text(f"Service Status Update {count}")
+#                 except WebSocketDisconnect:
+#                     disconnected_clients.append(client)
 
-            async with lock:  # Remove disconnected clients safely
-                for client in disconnected_clients:
-                    clients.remove(client)
+#             async with lock:  # Remove disconnected clients safely
+#                 for client in disconnected_clients:
+#                     clients.remove(client)
 
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends()):
     """Handles WebSocket connections from clients"""
-    await websocket.accept()
-
-    async with lock:  
-        clients.add(websocket)
-    if len(clients)==1:
-        await asyncio.create_task(broadcast())
+    await websocket_manager.connect(websocket)
+    if len(websocket_manager.clients)==1:
+        await asyncio.create_task(websocket_manager.send_monitoring_data(internal_service_monitor))
     try: 
         while True:
             await asyncio.sleep(1)
+
     except WebSocketDisconnect:
-        async with lock:
-            clients.discard(websocket) 
+        await websocket_manager.disconnect(websocket)
 
 app.include_router(service_status.router)
