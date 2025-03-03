@@ -15,3 +15,4 @@ router=APIRouter(prefix='/service-status')
 async def log_service_status(type:str, internal_service_monitor:InternalServiceMonitor=Depends(),logs_db_service:LogsDatabaseService=Depends()):
     if type=='internal':
         await internal_service_monitor.log_internal_service_status(logs_db_service=logs_db_service)
+
