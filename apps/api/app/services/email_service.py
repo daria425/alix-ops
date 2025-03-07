@@ -21,4 +21,5 @@ class EmailService:
             raise RuntimeError(f"Failed to send email: {e}")
 
 
+temp_email_service_instance=EmailService(sender_email="daria@projectalix.com")
     
