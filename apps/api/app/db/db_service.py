@@ -1,17 +1,28 @@
-from app.db.db_connection import db_connection
+from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
 from app.utils.logger import logger
-
-class DatabaseService:
-    """Base class to manage MongoDB collection"""
+from bson.objectid import ObjectId
+class AlixOpsDatabaseService:
+    """Base class to manage MongoDB collection in Alix Ops DB"""
     def __init__(self, collection_name:str):
         self.collection_name=collection_name
         self.collection=None
     async def init_collection(self):
-        if db_connection.db is None:
+        if alix_ops_db_connection.db is None:
             raise RuntimeError("Database connection is not initialized. Call `connect()` first.")
-        self.collection=db_connection.db[self.collection_name]
+        self.collection=alix_ops_db_connection.db[self.collection_name]
 
-class LogsDatabaseService(DatabaseService):
+class ControlRoomDatabaseService:
+    """Base class to manage MongoDB collection in Control Room DB"""
+    def __init__(self, collection_name:str):
+        self.collection_name=collection_name
+        self.collection=None
+    async def init_collection(self):
+        if alix_ops_db_connection.db is None:
+            raise RuntimeError("Database connection is not initialized. Call `connect()` first.")
+        self.collection=control_room_db_connection.db[self.collection_name]
+
+
+class LogsDatabaseService(AlixOpsDatabaseService):
     def __init__(self):
         super().__init__("internal_service_logs")
 
@@ -22,3 +33,36 @@ class LogsDatabaseService(DatabaseService):
             logger.info(f"Successfully inserted log entry {inserted_doc.inserted_id}")
         except Exception as e:
             logger.error(f"Error occurred inserting log entry:{e}")
+
+class UserDatabaseService(ControlRoomDatabaseService):
+    def __init__(self):
+        super().__init__("users")
+
+    async def insert_user(self, user:dict):
+        await self.init_collection()
+        try:
+            inserted_doc=await self.collection.insert_one(user)
+            logger.info(f"Successfully inserted user {inserted_doc.inserted_id}")
+        except Exception as e:
+            logger.error(f"Error occurred inserting user:{e}")
+
+class OrganizationDatabaseService(ControlRoomDatabaseService):
+    def __init__(self):
+        super().__init__("organizations")
+
+    async def find_organization_id_by_name(self, organization_name:str)->ObjectId:
+        await self.init_collection()
+        try:
+            organization=await self.collection.find_one({"organizationName":organization_name})
+            return organization.get("_id")
+        except Exception as e:
+            logger.error(f"Error occurred finding organization:{e}")
+            return None
+        
+    async def update_organization_with_uid(self, organization_id: ObjectId, uid:str):
+        await self.init_collection()
+        try:
+            await self.collection.update_one({"_id":organization_id}, {"$push":{"organizationMembers":uid}})
+            logger.info(f"Successfully updated organization {str(organization_id)}")
+        except Exception as e:
+            logger.error(f"Error occurred updating organization:{e}")

@@ -1,0 +1,10 @@
+{
+  "_id": { "$oid": "67008684854603c59adf1324" },
+  "uid": "O5Fc7TpyUzXqbuMiWJ5vdiNzLB23",
+  "email": "darianaumova5@gmail.com",
+  "name": "Daria",
+  "profilePicture": "https://lh3.googleusercontent.com/a/ACg8ocLrucJVPuo2TtzetjRMY9ICiErmN7GhZ6Hkz9nWLZr1CR2L8A=s96-c",
+  "organizationId": { "$oid": "67002741558dc7ecb66bd15e" },
+  "profileColor": "#3BE589",
+  "role": "orgAdmin"
+}

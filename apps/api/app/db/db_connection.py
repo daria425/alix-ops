@@ -4,37 +4,26 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from app.utils.logger import logger
 load_dotenv()
 MONGO_URI=os.getenv("MONGO_URI")
-DB_NAME=os.getenv("DB_NAME")
-
+ALIX_OPS_DB_NAME=os.getenv("ALIX_OPS_DB_NAME")
+CONTROL_ROOM_DB_NAME=os.getenv("CONTROL_ROOM_DB_NAME")
 class DatabaseConnection:
-    _instance=None
-    def __new__(cls, *args, **kwargs):
-        """Ensure only one instance of MongoDB exists."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._init_db()
-        return cls._instance
-
-    def _init_db(self):
-        """Initialize MongoDB connection attributes."""
-        self.client: AsyncIOMotorClient | None = None
-        self.db: AsyncIOMotorDatabase | None = None
+    def __init__(self,db_name: str,  mongo_uri: str):
+        self.mongo_uri = mongo_uri
+        self.db_name = db_name
+        self.client = None
+        self.db = None
 
     async def connect(self):
-        if self.client is None:
-            try:
-                self.client=AsyncIOMotorClient(MONGO_URI)
-                self.db = self.client[DB_NAME]
-                logger.info("✅ Connected to MongoDB ✅")
-            except Exception as e:
-                logger.error(f"😵 Error connecting to MongoDB:{e} 😵")
-                raise
+        """Initialize MongoDB connection."""
+        self.client = AsyncIOMotorClient(self.mongo_uri)
+        self.db = self.client[self.db_name]
+        logger.info(f"✅ Connected to MongoDB: {self.db_name}")
 
     async def close(self):
-        """Close the MongoDB connection."""
+        """Close MongoDB connection."""
         if self.client:
             self.client.close()
-            self.client = None
-            logger.info("❌ Disconnected from MongoDB ❌")
+            logger.info(f"❌ Disconnected from MongoDB: {self.db_name}")
 
-db_connection=DatabaseConnection()
+alix_ops_db_connection = DatabaseConnection(ALIX_OPS_DB_NAME, MONGO_URI)
+control_room_db_connection = DatabaseConnection(CONTROL_ROOM_DB_NAME, MONGO_URI)

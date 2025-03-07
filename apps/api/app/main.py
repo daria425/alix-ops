@@ -1,16 +1,20 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from app.db.db_connection import db_connection
-from app.routes import service_status
-from app.utils.logger import logger
+from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
+from app.routes import service_status, users
+from app.config.firebase_config import init_firebase
 from app.services.websocket_manager import WebsocketManager
 from app.core.internal_service_monitor import InternalServiceMonitor
 import asyncio
 
 async def lifespan(app: FastAPI):
-    await db_connection.connect()
+    await alix_ops_db_connection.connect()
+    await control_room_db_connection.connect()
+    init_firebase()
     yield
-    await db_connection.close()
+    await alix_ops_db_connection.close()
+    await control_room_db_connection.close()
+
 
 websocket_manager=WebsocketManager()
 app = FastAPI(lifespan=lifespan)
@@ -61,3 +65,4 @@ async def websocket_endpoint(websocket: WebSocket, internal_service_monitor: Int
         await websocket_manager.disconnect(websocket)
 
 app.include_router(service_status.router)
+app.include_router(users.router)

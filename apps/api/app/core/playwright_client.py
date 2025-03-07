@@ -54,5 +54,3 @@ class PlaywrightClient:
         except Exception as e:
             raise RuntimeError(f"Test failed: {e}")
 
-
-PlaywrightClient().test_login()
