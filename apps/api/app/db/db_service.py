@@ -46,6 +46,22 @@ class UserDatabaseService(ControlRoomDatabaseService):
         except Exception as e:
             logger.error(f"Error occurred inserting user:{e}")
 
+    async def find_user_by_email(self, email:str)->dict:
+        await self.init_collection()
+        try:
+            user=await self.collection.find_one({"email":email})
+            return user
+        except Exception as e:
+            logger.error(f"Error occurred finding user:{e}")   
+
+    async def delete_user(self, uid):
+        await self.init_collection()
+        try:
+            await self.collection.delete_one({"uid":uid})
+            logger.info(f"Successfully deleted user {uid}")
+        except Exception as e:
+            logger.error(f"Error occurred deleting user:{e}") 
+
 class OrganizationDatabaseService(ControlRoomDatabaseService):
     def __init__(self):
         super().__init__("organizations")
@@ -66,3 +82,11 @@ class OrganizationDatabaseService(ControlRoomDatabaseService):
             logger.info(f"Successfully updated organization {str(organization_id)}")
         except Exception as e:
             logger.error(f"Error occurred updating organization:{e}")
+
+    async def remove_uid_from_organization(self, organization_id: ObjectId, uid:str):
+        await self.init_collection()
+        try:
+            await self.collection.update_one({"_id":organization_id}, {"$pull":{"organizationMembers":uid}})
+            logger.info(f"Successfully removed user {uid} from organization {str(organization_id)}")
+        except Exception as e:
+            logger.error(f"Error occurred removing user from organization:{e}")
