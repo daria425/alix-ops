@@ -1,5 +1,4 @@
-
-from firebase_admin import auth
+from app.config.firebase_config import whatsapp_control_room_auth
 from app.utils.logger import logger
 from app.db.db_service import OrganizationDatabaseService, UserDatabaseService
 from app.services.email_service import EmailService
@@ -8,10 +7,10 @@ from app.models.platform_user_model import PlatformUserModel
 
 def create_user_in_firebase(email:str, role: str, email_service: EmailService):
     try:
-        user = auth.create_user(
+        user = whatsapp_control_room_auth.create_user(
             email=email,
         )
-        link=auth.generate_password_reset_link(email=email)
+        link=whatsapp_control_room_auth.generate_password_reset_link(email=email)
         email_service.send_email(email, "Welcome to Project Alix", f"Click on this link to set your password: {link}")
         logger.info(f"Link {link} sent to {email}")
         logger.info(f"Successfully created user: {user.uid} in Firebase")
@@ -25,7 +24,7 @@ def create_user_in_firebase(email:str, role: str, email_service: EmailService):
 
 def delete_user_in_firebase(uid:str):
     try:
-        auth.delete_user(uid)
+        whatsapp_control_room_auth.delete_user(uid)
         logger.info(f"Successfully deleted user: {uid} from Firebase")
     except Exception as e:
         logger.error(f"Failed to delete user: {e}")

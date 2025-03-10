@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.models.platform_user_model import UserModel
+from app.models.platform_user_model import PlatformUserModel
 from app.models.flow_info_model import FlowInfo
 from app.db.db_service import OrganizationDatabaseService, UserDatabaseService, FlowDatabaseService
 from app.services.email_service import temp_email_service_instance, EmailService
@@ -12,7 +12,7 @@ def get_email_service_instance():
 
 
 @router.post('/users/register', status_code=201)
-async def register_user(user: UserModel, organization_db_service: OrganizationDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends(), email_service: EmailService=Depends(get_email_service_instance)):
+async def register_user(user: PlatformUserModel, organization_db_service: OrganizationDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends(), email_service: EmailService=Depends(get_email_service_instance)):
     try:
         await register_user_in_db(user, organization_db_service, user_db_service, email_service)
         return {"message":"User registered successfully"}
@@ -20,7 +20,7 @@ async def register_user(user: UserModel, organization_db_service: OrganizationDa
         raise HTTPException(status_code=500, detail=f"Failed to register user: {e}")
     
 @router.post('/users/delete', status_code=204)
-async def delete_user(user: UserModel, organization_db_service: OrganizationDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends()):
+async def delete_user(user: PlatformUserModel, organization_db_service: OrganizationDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends()):
     try:
         await delete_user_in_db(user, organization_db_service, user_db_service)
         return {"message":"User deleted successfully"}

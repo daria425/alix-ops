@@ -1,30 +1,35 @@
-import { useState, useEffect, useRef } from "react";
-
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { AuthProvider } from "./services/AuthProvider";
+import Index from "./components/Index";
+import LoginForm from "./components/LoginForm";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Dashboard from "./components/Dashboard";
 function App() {
-  const connection = useRef(null);
-  const [status, setStatus] = useState("");
-  useEffect(() => {
-    const socket = new WebSocket("ws://127.0.0.1:8000/ws");
-
-    // Connection opened
-    socket.addEventListener("open", (event) => {
-      socket.send("Connection established");
-    });
-
-    // Listen for messages
-    socket.addEventListener("message", (event) => {
-      console.log("Message from server ", event.data);
-    });
-
-    connection.current = socket;
-
-    return () => connection.current?.close();
-  }, []);
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Index />,
+    },
+    {
+      path: "/login",
+      element: <LoginForm />,
+    },
+    {
+      path: "/app",
+      element: <ProtectedRoute />,
+      children: [
+        {
+          path: "dashboard",
+          element: <Dashboard />,
+        },
+      ],
+    },
+  ]);
 
   return (
-    <div>
-      <h1>Service Status: {status}</h1>
-    </div>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   );
 }
 

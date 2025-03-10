@@ -121,6 +121,7 @@ class AlixOpsUserService(AlixOpsDatabaseService):
         try:
             uid=user_data['uid']
             existing_user=await self.collection.find_one({"uid":uid}, {"_id":0})
+            print(existing_user)
             if existing_user:
                 logger.info(f"Found existing user, returning data for {existing_user['uid']}")
                 update_fields={
@@ -129,7 +130,7 @@ class AlixOpsUserService(AlixOpsDatabaseService):
                     if key not in existing_user:
                         update_fields[key]=value
                 if update_fields:
-                    updated_user=await self.collection.find_one_and_update(filter={"uid":uid}, update={"$set":update_fields}, return_document=ReturnDocument.AFTER)
+                    updated_user=await self.collection.find_one_and_update(filter={"uid":uid}, projection={"_id":0}, update={"$set":update_fields}, return_document=ReturnDocument.AFTER)
                     return updated_user
                 return existing_user
         except Exception as e:
