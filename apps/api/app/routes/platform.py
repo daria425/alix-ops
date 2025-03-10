@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.models.user_model import UserModel
+from app.models.platform_user_model import UserModel
 from app.models.flow_info_model import FlowInfo
 from app.db.db_service import OrganizationDatabaseService, UserDatabaseService, FlowDatabaseService
 from app.services.email_service import temp_email_service_instance, EmailService

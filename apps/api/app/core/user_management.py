@@ -3,7 +3,7 @@ from firebase_admin import auth
 from app.utils.logger import logger
 from app.db.db_service import OrganizationDatabaseService, UserDatabaseService
 from app.services.email_service import EmailService
-from app.models.user_model import UserModel
+from app.models.platform_user_model import PlatformUserModel
 
 
 def create_user_in_firebase(email:str, role: str, email_service: EmailService):
@@ -38,7 +38,7 @@ async def find_user_organization(organization_name: str, organization_db_service
         logger.error(f"Organization {organization_name} not found")
         return None
 
-async def register_user_in_db(user: UserModel,  organization_db_service: OrganizationDatabaseService, user_db_service: UserDatabaseService, email_service: EmailService):
+async def register_user_in_db(user: PlatformUserModel,  organization_db_service: OrganizationDatabaseService, user_db_service: UserDatabaseService, email_service: EmailService):
     email=user.email
     role=user.role
     organization_name=user.organization_name
@@ -54,7 +54,7 @@ async def register_user_in_db(user: UserModel,  organization_db_service: Organiz
         logger.error(f"Failed to register user: {e}")
         raise e
     
-async def delete_user_in_db(user: UserModel, organization_db_service: OrganizationDatabaseService, user_db_service: UserDatabaseService):
+async def delete_user_in_db(user: PlatformUserModel, organization_db_service: OrganizationDatabaseService, user_db_service: UserDatabaseService):
     email=user.email
     organization_name=user.organization_name
     try:

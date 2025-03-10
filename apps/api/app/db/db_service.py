@@ -1,6 +1,7 @@
 from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
 from app.utils.logger import logger
 from bson.objectid import ObjectId
+from pymongo import ReturnDocument
 class AlixOpsDatabaseService:
     """Base class to manage MongoDB collection in Alix Ops DB"""
     def __init__(self, collection_name:str):
@@ -111,6 +112,29 @@ class FlowDatabaseService(ControlRoomDatabaseService):
             logger.info(f"Successfully inserted flow {inserted_doc.inserted_id}")
         except Exception as e:
             logger.error(f"Error occurred inserting flow:{e}")
+
+class AlixOpsUserService(AlixOpsDatabaseService):
+    def __init__(self):
+        super().__init__("users")
+    async def login_user(self, user_data:dict):
+        await self.init_collection()
+        try:
+            uid=user_data['uid']
+            existing_user=await self.collection.find_one({"uid":uid}, {"_id":0})
+            if existing_user:
+                logger.info(f"Found existing user, returning data for {existing_user['uid']}")
+                update_fields={
+                }
+                for key, value in user_data.items():
+                    if key not in existing_user:
+                        update_fields[key]=value
+                if update_fields:
+                    updated_user=await self.collection.find_one_and_update(filter={"uid":uid}, update={"$set":update_fields}, return_document=ReturnDocument.AFTER)
+                    return updated_user
+                return existing_user
+        except Exception as e:
+            logger.error(f"Error occurred inserting user:{e}")
+    
 
 
 
