@@ -10,6 +10,15 @@ router=APIRouter(prefix='/platform')
 def get_email_service_instance():
     return temp_email_service_instance
 
+@router.get("")
+async def get_platform_data(org_db_service: OrganizationDatabaseService=Depends(), flow_db_service: FlowDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends()):
+    try:
+        organizations=await org_db_service.get_all_documents()
+        users=await user_db_service.get_all_documents()
+        flows=await flow_db_service.get_all_documents()
+        return {"organizations":organizations, "users":users, "flows":flows}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve platform data: {e}")
 
 @router.post('/users/register', status_code=201)
 async def register_user(user: PlatformUserModel, organization_db_service: OrganizationDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends(), email_service: EmailService=Depends(get_email_service_instance)):

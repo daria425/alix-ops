@@ -1,28 +1,56 @@
 from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
 from app.utils.logger import logger
 from bson.objectid import ObjectId
+from bson import json_util
 from pymongo import ReturnDocument
-class AlixOpsDatabaseService:
-    """Base class to manage MongoDB collection in Alix Ops DB"""
-    def __init__(self, collection_name:str):
-        self.collection_name=collection_name
-        self.collection=None
+
+def convert_objectid(doc):
+    if isinstance(doc, list):
+        return [convert_objectid(d) for d in doc]
+    elif isinstance(doc, dict):
+        return {k: convert_objectid(v) for k, v in doc.items()}
+    elif isinstance(doc, ObjectId):
+        return str(doc)
+    else:
+        return doc
+    
+class BaseDatabaseService:
+    """Base class to manage MongoDB collections for different databases."""
+
+    def __init__(self, db_connection, collection_name: str):
+        self.db_connection = db_connection
+        self.collection_name = collection_name
+        self.collection = None
+
+
     async def init_collection(self):
-        if alix_ops_db_connection.db is None:
+        if self.db_connection.db is None:
             raise RuntimeError("Database connection is not initialized. Call `connect()` first.")
-        self.collection=alix_ops_db_connection.db[self.collection_name]
+        self.collection = self.db_connection.db[self.collection_name]
 
-class ControlRoomDatabaseService:
-    """Base class to manage MongoDB collection in Control Room DB"""
-    def __init__(self, collection_name:str):
-        self.collection_name=collection_name
-        self.collection=None
-    async def init_collection(self):
-        if alix_ops_db_connection.db is None:
-            raise RuntimeError("Database connection is not initialized. Call `connect()` first.")
-        self.collection=control_room_db_connection.db[self.collection_name]
+    async def get_all_documents(self):
+        await self.init_collection()
+        try:
+            data = self.collection.find({})
+            data = await data.to_list(None)  # `None` retrieves all documents
+            return convert_objectid(data)
+        except Exception as e:
+            logger.error(f"Error occurred getting all collection data: {e}")
+            return []
 
+class AlixOpsDatabaseService(BaseDatabaseService):
+    """Base class for collections in the Alix Ops database."""
 
+    def __init__(self, collection_name: str):
+        super().__init__(alix_ops_db_connection, collection_name)
+
+class ControlRoomDatabaseService(BaseDatabaseService):
+    """Base class for collections in the Control Room database."""
+
+    def __init__(self, collection_name: str):
+        super().__init__(control_room_db_connection, collection_name)
+
+# ------------------------- Specific Database Services -------------------------
 class LogsDatabaseService(AlixOpsDatabaseService):
     def __init__(self):
         super().__init__("internal_service_logs")
