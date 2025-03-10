@@ -1,13 +1,9 @@
 
-from typing import List
-from dotenv import load_dotenv
 from app.db.db_service import LogsDatabaseService
 from app.utils.logger import logger
-import requests, time, json,os
-load_dotenv()
-INTERNAL_SERVICE_MONITORING_URL_LIST = json.loads(
-    os.environ.get("INTERNAL_SERVICE_MONITORING_URL_LIST", "[]")
-)
+import requests, time
+
+INTERNAL_SERVICE_MONITORING_URL_LIST=["https://webhook-dot-ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://whatsapp-control-room.ew.r.appspot.com/"]
 class InternalServiceMonitor:
     def __init__(self):
         self.service_url_list=INTERNAL_SERVICE_MONITORING_URL_LIST

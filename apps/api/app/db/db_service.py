@@ -90,3 +90,27 @@ class OrganizationDatabaseService(ControlRoomDatabaseService):
             logger.info(f"Successfully removed user {uid} from organization {str(organization_id)}")
         except Exception as e:
             logger.error(f"Error occurred removing user from organization:{e}")
+
+    async def register_flow_for_organization(self, organization_id: ObjectId, flow_trigger: dict):
+        await self.init_collection()
+        try:
+            flow_trigger_key = next(iter(flow_trigger))
+            flow_trigger_value = flow_trigger[flow_trigger_key]
+            await self.collection.update_one({"_id":organization_id}, {"$set":{f"triggers.{flow_trigger_key}":flow_trigger_value}})
+        except Exception as e:
+            logger.error(f"Error occurred registering flow for organization:{e}")
+
+class FlowDatabaseService(ControlRoomDatabaseService):
+    def __init__(self):
+        super().__init__("flows")
+
+    async def insert_flow(self, flow:dict):
+        await self.init_collection()
+        try:
+            inserted_doc=await self.collection.insert_one(flow)
+            logger.info(f"Successfully inserted flow {inserted_doc.inserted_id}")
+        except Exception as e:
+            logger.error(f"Error occurred inserting flow:{e}")
+
+
+

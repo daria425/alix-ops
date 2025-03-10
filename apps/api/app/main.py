@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
-from app.routes import service_status, users
+from app.routes import platform, service_status
 from app.config.firebase_config import init_firebase
 from app.services.websocket_manager import WebsocketManager
 from app.core.internal_service_monitor import InternalServiceMonitor
@@ -65,4 +65,4 @@ async def websocket_endpoint(websocket: WebSocket, internal_service_monitor: Int
         await websocket_manager.disconnect(websocket)
 
 app.include_router(service_status.router)
-app.include_router(users.router)
+app.include_router(platform.router)
