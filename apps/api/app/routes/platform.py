@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.platform_user_model import PlatformUserModel
 from app.models.flow_info_model import FlowInfo
-from app.db.db_service import OrganizationDatabaseService, UserDatabaseService, FlowDatabaseService
+from app.db.db_service import OrganizationDatabaseService, UserDatabaseService, FlowDatabaseService, MessageDatabaseService, FlowHistoryDatabaseService
 from app.services.email_service import temp_email_service_instance, EmailService
 from app.core.user_management import register_user_in_db, delete_user_in_db
 from app.core.flow_management import create_flow_in_db
@@ -19,6 +19,22 @@ async def get_platform_data(org_db_service: OrganizationDatabaseService=Depends(
         return {"organizations":organizations, "users":users, "flows":flows}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve platform data: {e}")
+    
+@router.get('/stats/messages/daily')
+async def get_daily_message_stats(message_db_service: MessageDatabaseService=Depends()):
+    try:
+        daily_message_counts=await message_db_service.get_daily_message_counts()
+        return daily_message_counts
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve daily message counts: {e}")
+    
+@router.get('/stats/flows/daily')
+async def get_daily_flow_stats(flow_history_db_service: FlowHistoryDatabaseService=Depends()):
+    try:
+        daily_flow_counts=await flow_history_db_service.get_daily_flow_counts()
+        return daily_flow_counts
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve daily flow counts: {e}")
 
 @router.post('/users/register', status_code=201)
 async def register_user(user: PlatformUserModel, organization_db_service: OrganizationDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends(), email_service: EmailService=Depends(get_email_service_instance)):

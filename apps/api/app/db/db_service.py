@@ -1,5 +1,6 @@
 from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
 from app.utils.logger import logger
+from app.utils.dates import fill_dates
 from bson.objectid import ObjectId
 from bson import json_util
 from pymongo import ReturnDocument
@@ -142,6 +143,67 @@ class FlowDatabaseService(ControlRoomDatabaseService):
         except Exception as e:
             logger.error(f"Error occurred inserting flow:{e}")
 
+class MessageDatabaseService(ControlRoomDatabaseService):
+    def __init__(self):
+        super().__init__("messages")
+    
+    async def get_daily_message_counts(self):
+        await self.init_collection()
+        try:
+            pipeline = [
+                        {
+                            "$project": {
+                                "day": {
+                                    "$dateToString": {"format": "%Y-%m-%d", "date": "$CreatedAt"}
+                                }
+                            }
+                        },
+                        {
+                            "$group": {
+                                "_id": "$day",  # Group by day
+                                "messagesSent": {"$sum": 1}  # Count messages
+                            }
+                        },
+                        {
+                            "$sort": {"_id": 1}  # Sort by date
+                        }
+                    ]
+            result = await self.collection.aggregate(pipeline).to_list(None)
+            messages_by_date = {doc["_id"]: doc["messagesSent"] for doc in result}
+            return fill_dates(messages_by_date)
+        except Exception as e:
+            logger.error(f"Error occurred counting messages:{e}")
+        
+class FlowHistoryDatabaseService(ControlRoomDatabaseService):
+    def __init__(self):
+        super().__init__("flow_history")
+    async def get_daily_flow_counts(self):
+        await self.init_collection()
+        try:
+            pipeline = [
+        {
+            "$project": {
+                "day": {
+                    "$dateToString": {"format": "%Y-%m-%d", "date": "$CreatedAt"}
+                },
+                "flowName": 1  # Keep the flow name
+            }
+        },
+        {
+            "$group": {
+                "_id": "$day",  # Group by day
+                "flowsStarted": {"$sum": 1}  # Count flows
+            }
+        },
+        {
+            "$sort": {"_id": 1}  # Sort by date
+        }
+    ]
+            result = await self.collection.aggregate(pipeline).to_list(None)
+            flows_by_date = {doc["_id"]: doc["flowsStarted"] for doc in result}
+            return fill_dates(flows_by_date)
+        except Exception as e:
+            logger.error(f"Error occurred counting flows:{e}")  
 class AlixOpsUserService(AlixOpsDatabaseService):
     def __init__(self):
         super().__init__("users")

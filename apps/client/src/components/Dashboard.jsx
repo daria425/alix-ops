@@ -3,9 +3,11 @@ import { useData } from "../hooks/useData";
 import LoadingState from "./LoadingState";
 import { Box, Typography, Button } from "@mui/material";
 import { mockDashboardData } from "../../mockData/mockDashboardData";
+import { mockFlowData } from "../../mockData/mockChartData";
 import FetchError from "./FetchError";
 import Summary from "./Summary";
 import WidgetCard from "./WidgetCard";
+import CustomLineChart from "./LineChart";
 
 const buttons = [
   {
@@ -50,6 +52,7 @@ export default function Dashboard() {
         ]}
       />
       <WidgetCard buttons={buttons} cardHeader={"Tools"} />
+      <CustomLineChart data={mockFlowData} chartProps={{ height: 300 }} />
     </Box>
   );
 }
