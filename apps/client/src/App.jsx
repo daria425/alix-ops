@@ -1,9 +1,21 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { AuthProvider } from "./services/AuthProvider";
+import { createTheme, ThemeProvider } from "@mui/material";
 import Index from "./components/Index";
 import LoginForm from "./components/LoginForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./components/Dashboard";
+import Layout from "./components/Layout";
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#ee6d4d",
+    },
+    secondary: {
+      main: "#0e1614",
+    },
+  },
+});
 function App() {
   const router = createBrowserRouter([
     {
@@ -19,8 +31,12 @@ function App() {
       element: <ProtectedRoute />,
       children: [
         {
-          path: "dashboard",
-          element: <Dashboard />,
+          path: "",
+          element: <Layout />,
+          children: [
+            { path: "dashboard", element: <Dashboard /> },
+            { path: "monitoring", element: <div>Monitoring</div> },
+          ],
         },
       ],
     },
@@ -28,7 +44,9 @@ function App() {
 
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </AuthProvider>
   );
 }
