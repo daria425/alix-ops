@@ -31,9 +31,10 @@ class BaseDatabaseService:
     async def get_all_documents(self):
         await self.init_collection()
         try:
-            data = self.collection.find({})
-            data = await data.to_list(None)  # `None` retrieves all documents
-            return convert_objectid(data)
+            return {
+                "documents": convert_objectid(await self.collection.find({}).to_list(None)),
+                "total_count": await self.collection.count_documents({})
+            }
         except Exception as e:
             logger.error(f"Error occurred getting all collection data: {e}")
             return []
@@ -155,7 +156,7 @@ class AlixOpsUserService(AlixOpsDatabaseService):
                 update_fields={
                 }
                 for key, value in user_data.items():
-                    if key not in existing_user:
+                    if key not in existing_user or existing_user[key]!=value:
                         update_fields[key]=value
                 if update_fields:
                     updated_user=await self.collection.find_one_and_update(filter={"uid":uid}, projection={"_id":0}, update={"$set":update_fields}, return_document=ReturnDocument.AFTER)

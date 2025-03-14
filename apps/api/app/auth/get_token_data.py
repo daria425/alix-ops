@@ -3,7 +3,6 @@ from app.utils.logger import logger
 
 def decode_token(id_token:str):
     try:
-        print(id_token)
         decoded_token = alix_ops_auth.verify_id_token(id_token=id_token)
         logger.info(f"Token verified")
         return decoded_token
@@ -23,6 +22,7 @@ def get_token_data(id_token:str):
         "auth_time": decoded_token["auth_time"],
         "created_at": decoded_token["iat"]
     }
+        print(user_data)
         return user_data
     else:
         return None
