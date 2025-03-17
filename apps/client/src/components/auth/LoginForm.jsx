@@ -1,7 +1,7 @@
 import { useReducer, useContext } from "react";
-import { formReducer } from "../reducers/formReducer";
+import { formReducer } from "../../reducers/formReducer";
 import { useNavigate } from "react-router";
-import { AuthContext } from "../services/AuthProvider";
+import { AuthContext } from "../../services/AuthProvider";
 const initialState = {
   email: "",
   password: "",

@@ -1,4 +1,4 @@
-import { AuthContext } from "../services/AuthProvider";
+import { AuthContext } from "../../services/AuthProvider";
 import { useContext, useEffect } from "react";
 import { useNavigate, Outlet, useLocation } from "react-router";
 export default function ProtectedRoute() {

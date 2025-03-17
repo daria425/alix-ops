@@ -1,16 +1,17 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { AuthProvider } from "./services/AuthProvider";
 import { createTheme, ThemeProvider } from "@mui/material";
-import Index from "./components/Index";
-import LoginForm from "./components/LoginForm";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Dashboard from "./components/Dashboard";
-import Layout from "./components/Layout";
+import Index from "./components/common/Index";
+import LoginForm from "./components/auth/LoginForm";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Dashboard from "./components/dashboard/Dashboard";
+import Layout from "./components/common/Layout";
 const theme = createTheme({
   palette: {
     primary: {
       main: "#ee6d4d",
     },
+
     secondary: {
       main: "#0e1614",
     },

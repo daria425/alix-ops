@@ -1,9 +1,10 @@
-import { Card, CardContent, Button, Typography } from "@mui/material";
-export default function ButtonCard({ cardHeader, buttons }) {
+import { Card, CardContent, Button } from "@mui/material";
+import MainCardHeading from "./MainCardHeading";
+export default function WidgetCard({ cardHeader, buttons }) {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6">{cardHeader}</Typography>
+        <MainCardHeading title={cardHeader} />
         {buttons.map((button, index) => (
           <Button variant="outlined" key={index} onClick={button.onClick}>
             {button.text}
