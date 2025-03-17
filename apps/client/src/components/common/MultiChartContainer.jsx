@@ -17,7 +17,7 @@ export default function MultiChartContainer({ chartProps }) {
       }
     : {
         "display": "grid",
-        "grid-template-columns": "1fr 1fr",
+        gridTemplateColumns: "1fr 1fr",
       };
   const finalData =
     import.meta.env.MODE === "development" ? mockChartData : data;

@@ -4,6 +4,7 @@ import { createTheme, ThemeProvider } from "@mui/material";
 import Index from "./components/common/Index";
 import LoginForm from "./components/auth/LoginForm";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Monitor from "./components/monitoring/Monitor";
 import Dashboard from "./components/dashboard/Dashboard";
 import Layout from "./components/common/Layout";
 const theme = createTheme({
@@ -36,7 +37,7 @@ function App() {
           element: <Layout />,
           children: [
             { path: "dashboard", element: <Dashboard /> },
-            { path: "monitoring", element: <div>Monitoring</div> },
+            { path: "monitoring", element: <Monitor /> },
           ],
         },
       ],
