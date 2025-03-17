@@ -7,14 +7,13 @@ export default function Websocket() {
   return (
     <div>
       <h1>Service Status:{""} </h1>
-      {/* {
-        serviceResponses.length>0&&serviceResponses.map((serviceResponse, index) => (
+      {serviceResponses.length > 0 &&
+        serviceResponses.map((serviceResponse, index) => (
           <div key={index}>
-            <h2>{serviceResponse.serviceName}</h2>
-            <p>{serviceResponse.status}</p>
+            <h2>{serviceResponse.url}</h2>
+            <p>{serviceResponse.status_code}</p>
           </div>
-        ))
-      } */}
+        ))}
     </div>
   );
 }
