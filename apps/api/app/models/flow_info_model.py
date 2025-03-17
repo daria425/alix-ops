@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict
+from datetime import datetime
 class FlowInfo(BaseModel):
     model_config=ConfigDict(extra='allow')
     isSendable: bool
@@ -7,3 +8,4 @@ class FlowInfo(BaseModel):
     isRegistration: bool
     isSurvey: bool
     trigger: dict
+    CreatedAt: datetime

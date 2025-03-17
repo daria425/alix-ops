@@ -45,6 +45,7 @@ async def register_user_in_db(user: PlatformUserModel,  organization_db_service:
         organization_id=await find_user_organization(organization_name, organization_db_service)
         user_dict=create_user_in_firebase(email, role, email_service)
         user_dict["organizationId"]=organization_id
+        user_dict=user_dict.pop("organization_name")
         await user_db_service.insert_user(user_dict)
         await organization_db_service.update_organization_with_uid(organization_id, user_dict["uid"])
         logger.info(f"Successfully registered user {email} to organization {organization_name}")

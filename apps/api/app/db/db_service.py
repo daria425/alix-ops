@@ -170,9 +170,20 @@ class MessageDatabaseService(ControlRoomDatabaseService):
                     ]
             result = await self.collection.aggregate(pipeline).to_list(None)
             messages_by_date = {doc["_id"]: doc["messagesSent"] for doc in result}
-            return fill_dates(messages_by_date)
+
+            # Calculate total count
+            total_count = sum(messages_by_date.values())
+
+            # Fill missing dates (if needed)
+            messages_by_date = fill_dates(messages_by_date)
+
+            # Return data with total count
+            return {
+                "daily_counts": messages_by_date,
+                "total_count": total_count
+            }
         except Exception as e:
-            logger.error(f"Error occurred counting messages:{e}")
+                logger.error(f"Error occurred counting messages:{e}")
         
 class FlowHistoryDatabaseService(ControlRoomDatabaseService):
     def __init__(self):
@@ -201,7 +212,12 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
     ]
             result = await self.collection.aggregate(pipeline).to_list(None)
             flows_by_date = {doc["_id"]: doc["flowsStarted"] for doc in result}
-            return fill_dates(flows_by_date)
+            total_count = sum(flows_by_date.values())   
+            flows_by_date = fill_dates(flows_by_date)   
+            return {
+                "daily_counts": flows_by_date,
+                "total_count": total_count
+            }
         except Exception as e:
             logger.error(f"Error occurred counting flows:{e}")  
 class AlixOpsUserService(AlixOpsDatabaseService):

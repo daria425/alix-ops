@@ -24,7 +24,10 @@ async def get_platform_data(org_db_service: OrganizationDatabaseService=Depends(
 async def get_daily_message_stats(message_db_service: MessageDatabaseService=Depends()):
     try:
         daily_message_counts=await message_db_service.get_daily_message_counts()
-        return daily_message_counts
+        return {
+            "label": "Messages Sent Daily", 
+            "data": daily_message_counts
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve daily message counts: {e}")
     
@@ -32,9 +35,32 @@ async def get_daily_message_stats(message_db_service: MessageDatabaseService=Dep
 async def get_daily_flow_stats(flow_history_db_service: FlowHistoryDatabaseService=Depends()):
     try:
         daily_flow_counts=await flow_history_db_service.get_daily_flow_counts()
-        return daily_flow_counts
+        return {
+            "label": "Flows Sent Daily", 
+            "data": daily_flow_counts
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve daily flow counts: {e}")
+    
+@router.get("/stats/summary/daily")
+async def get_daily_stats_summary(message_db_service: MessageDatabaseService=Depends(), flow_history_db_service: FlowHistoryDatabaseService=Depends()):
+    try:
+        daily_message_counts=await message_db_service.get_daily_message_counts()
+        daily_flow_counts=await flow_history_db_service.get_daily_flow_counts()
+        return {
+            "data": [
+                {
+                    "label": "Messages Sent Daily", 
+                    "dataset": daily_message_counts
+                },
+                {
+                    "label": "Flows Sent Daily", 
+                    "dataset": daily_flow_counts
+                }
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve daily stats summary: {e}")
 
 @router.post('/users/register', status_code=201)
 async def register_user(user: PlatformUserModel, organization_db_service: OrganizationDatabaseService=Depends(), user_db_service: UserDatabaseService=Depends(), email_service: EmailService=Depends(get_email_service_instance)):
