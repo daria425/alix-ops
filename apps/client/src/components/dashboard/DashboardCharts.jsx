@@ -1,10 +1,10 @@
-import CustomLineChart from "./CustomLineChart";
-import MainCardHeading from "./MainCardHeading";
+import CustomLineChart from "../common/CustomLineChart";
+import MainCardHeading from "../common/MainCardHeading";
 import { Card, CardContent, Typography, Grid2 } from "@mui/material";
 import { mockChartData } from "../../../mockData/mockChartData";
 import { useData } from "../../hooks/useData";
 import useMediaQuery from "@mui/material/useMediaQuery";
-export default function MultiChartContainer({ chartProps }) {
+export default function DashboardCharts({ chartProps }) {
   //eslint-disable-next-line
   const { loading, fetchError, data } = useData(
     "/platform/stats/summary/daily",

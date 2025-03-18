@@ -3,10 +3,23 @@ from app.db.db_service import LogsDatabaseService
 from app.utils.logger import logger
 import requests, time
 
-INTERNAL_SERVICE_MONITORING_URL_LIST=["https://webhook-dot-ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://whatsapp-control-room.ew.r.appspot.com/"]
+INTERNAL_SERVICE_MONITORING_URL_LIST=["https://webhook-dot-ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://ai-api-dot-ai-signposting.nw.r.appspot.com/", "https://whatsapp-control-room.ew.r.appspot.com/"]
 class InternalServiceMonitor:
     def __init__(self):
         self.service_url_list=INTERNAL_SERVICE_MONITORING_URL_LIST
+
+    @staticmethod
+    def get_friendly_name(service_url):
+        if "webhook" in service_url:
+            return "WhatsApp Webhook API"
+        elif "ai-signposting" in service_url and "ai-api" not in service_url:
+            return "WhatsApp Flows API"
+        elif "ai-api" in service_url:
+            return "WhatsApp AI API"
+        elif "whatsapp-control-room" in service_url:
+            return "Platform API"
+        else:
+            return "Unknown Service"
     
     @staticmethod
     def _ping_services(service_url_list):
@@ -27,6 +40,7 @@ class InternalServiceMonitor:
                 service_data = service_response.json()
 
                 service_url_responses['service_responses'].append({
+                    "friendly_name": InternalServiceMonitor.get_friendly_name(service_url),
                     "url":service_url,
                     "message": message,
                     "data": service_data,
@@ -37,6 +51,7 @@ class InternalServiceMonitor:
             except requests.exceptions.Timeout:
                 response_time = round(time.time() - start_time, 2)
                 service_url_responses['service_responses'].append({
+                    "friendly_name": InternalServiceMonitor.get_friendly_name(service_url),
                     "url":service_url,
                     "message": f"Timeout error for {service_url} (took too long to respond)",
                     "data": None,
@@ -48,6 +63,7 @@ class InternalServiceMonitor:
             except requests.exceptions.ConnectionError:
                 response_time = round(time.time() - start_time, 2)
                 service_url_responses['service_responses'].append({
+                    "friendly_name": InternalServiceMonitor.get_friendly_name(service_url),
                     "url":service_url,
                     "message": f"Connection error for {service_url} (service may be down)",
                     "data": None,
@@ -59,6 +75,7 @@ class InternalServiceMonitor:
             except requests.exceptions.HTTPError as e:
                 response_time = round(time.time() - start_time, 2)
                 service_url_responses['service_responses'].append({
+                    "friendly_name": InternalServiceMonitor.get_friendly_name(service_url),
                     "url":service_url,
                     "message": f"HTTP error for {service_url}: {e}",
                     "data": None,
@@ -70,6 +87,7 @@ class InternalServiceMonitor:
             except Exception as e:
                 response_time = round(time.time() - start_time, 2)
                 service_url_responses['service_responses'].append({
+                    "friendly_name": InternalServiceMonitor.get_friendly_name(service_url),
                     "url":service_url,
                     "message": f"Unexpected error for {service_url}: {e}",
                     "data": None,

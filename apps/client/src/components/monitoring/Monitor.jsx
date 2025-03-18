@@ -1,9 +1,9 @@
-import Websocket from "./Websocket";
+import ServiceStatusWebsocket from "./ServiceStatusWebsocket";
 
 export default function Monitoring() {
   return (
     <div>
-      <Websocket />
+      <ServiceStatusWebsocket />
     </div>
   );
 }

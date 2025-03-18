@@ -1,4 +1,4 @@
-import MultiChartContainer from "../common/MultiChartContainer";
+import DashboardCharts from "./DashboardCharts";
 import { useData } from "../../hooks/useData";
 import LoadingState from "../common/LoadingState";
 import { Box, Typography, Button } from "@mui/material";
@@ -61,7 +61,7 @@ export default function Dashboard() {
         </Box>
       </Summary>
       {/* <WidgetCard buttons={buttons} cardHeader={"Tools"} /> */}
-      <MultiChartContainer chartProps={{ height: 300 }} />
+      <DashboardCharts chartProps={{ height: 300 }} />
     </Box>
   );
 }

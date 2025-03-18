@@ -3,6 +3,7 @@ from app.utils.logger import logger
 from app.utils.dates import fill_dates
 from bson.objectid import ObjectId
 from bson import json_util
+from datetime import datetime
 from pymongo import ReturnDocument
 
 def convert_objectid(doc):
@@ -12,6 +13,8 @@ def convert_objectid(doc):
         return {k: convert_objectid(v) for k, v in doc.items()}
     elif isinstance(doc, ObjectId):
         return str(doc)
+    elif isinstance(doc, datetime):
+        return doc.isoformat()
     else:
         return doc
     
@@ -242,6 +245,18 @@ class AlixOpsUserService(AlixOpsDatabaseService):
                 return existing_user
         except Exception as e:
             logger.error(f"Error occurred inserting user:{e}")
+
+class ErrorDatabaseService(AlixOpsDatabaseService):
+    def __init__(self):
+        super().__init__("error_logs")
+    async def insert_error(self, error_data:dict):
+        await self.init_collection()
+        try:
+            inserted_doc=await self.collection.insert_one(error_data)
+            logger.info(f"Successfully inserted error {inserted_doc.inserted_id}")
+        except Exception as e:
+            logger.error(f"Error occurred inserting error:{e}")
+
     
 
 
