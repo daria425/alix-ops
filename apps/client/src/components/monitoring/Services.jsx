@@ -1,19 +1,33 @@
-import { Card, CardContent } from "@mui/material";
+import { Card, CardContent, Typography } from "@mui/material";
 import MainCardHeading from "../common/MainCardHeading";
 import CustomBarChart from "../common/CustomBarChart";
-export default function Services({ serviceData }) {
-  const formattedData = serviceData.map(({ friendly_name, response_time }) => ({
-    label: friendly_name,
-    value: response_time,
-  }));
+
+export default function Services({ serviceResponses }) {
+  //   const formattedData =
+  //     serviceResponses?.map(({ friendly_name, response_time }) => ({
+  //       label: friendly_name,
+  //       value: response_time,
+  //     })) ?? [];
+
+  //   console.log(formattedData);
+  console.log(serviceResponses);
   return (
     <Card>
       <CardContent>
         <MainCardHeading title="Service Latency" />
-        <CustomBarChart
-          dataset={formattedData}
-          chartProps={{ width: 800, height: 300 }}
-        />
+        {serviceResponses && serviceResponses.length > 0 ? (
+          <CustomBarChart
+            dataset={serviceResponses.map(
+              ({ friendly_name, response_time }) => ({
+                label: friendly_name,
+                value: response_time,
+              })
+            )}
+            chartProps={{ width: 800, height: 300 }}
+          />
+        ) : (
+          <Typography variant="body1">Loading service data</Typography>
+        )}
       </CardContent>
     </Card>
   );

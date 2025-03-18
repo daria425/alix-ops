@@ -7,11 +7,7 @@ export default function Websocket() {
 
   return (
     <div>
-      {serviceResponses.length > 0 ? (
-        <Services serviceData={serviceResponses} />
-      ) : (
-        <p>Loading service data...</p>
-      )}
+      <Services serviceResponses={serviceResponses} />
     </div>
   );
 }
