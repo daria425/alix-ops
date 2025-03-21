@@ -7,6 +7,24 @@ INTERNAL_SERVICE_MONITORING_URL_LIST=["https://webhook-dot-ai-signposting.nw.r.a
 class InternalServiceMonitor:
     def __init__(self):
         self.service_url_list=INTERNAL_SERVICE_MONITORING_URL_LIST
+        self.latency_check_request_body={
+    "SmsMessageSid": "",
+    "NumMedia": "0",
+    "ProfileName": "Daria Naumova",
+    "MessageType": "text",
+    "SmsSid": "",
+    "WaId": "38269372208",
+    "SmsStatus": "received",
+    "Body": "latency",
+    "To": "whatsapp:+447462582640",
+    "MessagingServiceSid": "",
+    "NumSegments": "1",
+    "ReferralNumMedia": "0",
+    "MessageSid": "",
+    "AccountSid": "",
+    "From": "whatsapp:+38269372208",
+    "ApiVersion": "2010-04-01",
+        }
 
     @staticmethod
     def get_friendly_name(service_url):
@@ -97,6 +115,69 @@ class InternalServiceMonitor:
                 })
         service_url_responses['completed_at']=time.time()
         return service_url_responses
+    def run_latency_test(self):
+        start_time = time.time()
+        try:
+            response = requests.post(
+                "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
+                json=self.latency_check_request_body,
+                timeout=10
+            )
+            response_time = round(time.time() - start_time, 2)
+            response.raise_for_status()
+            status_code = response.status_code
+            message = f"Latency test completed successfully with response time of {response_time} seconds"
+            response_data = response.json()
+            return {
+                "message": message,
+                "status_code": status_code,
+                "response_time": response_time,
+                "error": False,
+                "url": "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
+                "data": response_data,
+            }
+        except requests.exceptions.Timeout:
+            response_time = round(time.time() - start_time, 2)
+            return {
+                "message": "Timeout error during latency test (took too long to respond)",
+                "status_code": 408,
+                "response_time": response_time,
+                "error": True,
+                "url": "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
+                "data": None,
+            }
+        except requests.exceptions.ConnectionError:
+            response_time = round(time.time() - start_time, 2)
+            return {
+                "message": "Connection error during latency test (service may be down)",
+                "status_code": 503,
+                "response_time": response_time,
+                "error": True,
+                "url": "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
+                "data": None,
+            }
+        except requests.exceptions.HTTPError as e:
+            response_time = round(time.time() - start_time, 2)
+            return {
+                "message": f"HTTP error during latency test: {e}",
+                "status_code": response.status_code if 'response' in locals() else 500,
+                "response_time": response_time,
+                "error": True,
+                "url": "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
+                "data": None,
+            }
+        except Exception as e:
+            response_time = round(time.time() - start_time, 2)
+            return {
+                "message": f"Unexpected error during latency test: {e}",
+                "status_code": 500,
+                "response_time": response_time,
+                "error": True,
+                "url": "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
+                "data": None,
+            }
+
+
     
     async def log_internal_service_status(self, logs_db_service: LogsDatabaseService):
         service_url_responses=self._ping_services(self.service_url_list)

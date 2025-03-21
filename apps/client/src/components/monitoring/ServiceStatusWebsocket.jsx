@@ -25,7 +25,7 @@ const hasValidData = (array) => {
 };
 
 export default function Websocket() {
-  const { message } = useWebSocket("ws://127.0.0.1:8000/ws");
+  const { message } = useWebSocket("ws://127.0.0.1:8000/status/ws");
   const { service_responses = [], error_data = {} } = message || {};
   const [serviceStatusHistory, setServiceStatusHistory] = useState([]);
   useEffect(() => {
