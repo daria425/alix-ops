@@ -15,9 +15,7 @@ const AuthProvider = ({ children }) => {
   const [authenticatedUser, setAuthenticatedUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log("Auth provider rerendered with", error, authenticatedUser);
   const handleTokenAuth = async (user) => {
-    console.log("Token auth ran, user is", user);
     setIsLoading(true);
     setError(null);
     const idToken = await user.getIdToken(true);
@@ -32,7 +30,6 @@ const AuthProvider = ({ children }) => {
         }
       );
       if (response.status === 200) {
-        console.log("Data from server", response.data);
         setAuthenticatedUser(response.data);
       } else {
         console.error("Error verifying user:", response);

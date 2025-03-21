@@ -9,8 +9,6 @@ export default function Services({ serviceResponses }) {
   //       value: response_time,
   //     })) ?? [];
 
-  //   console.log(formattedData);
-  console.log(serviceResponses);
   return (
     <Card>
       <CardContent>
@@ -23,7 +21,7 @@ export default function Services({ serviceResponses }) {
                 value: response_time,
               })
             )}
-            chartProps={{ width: 800, height: 300 }}
+            chartProps={{ height: 300 }}
           />
         ) : (
           <Typography variant="body1">Loading service data</Typography>

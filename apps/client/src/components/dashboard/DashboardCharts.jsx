@@ -21,7 +21,7 @@ export default function DashboardCharts({ chartProps }) {
       };
   const finalData =
     import.meta.env.MODE === "development" ? mockChartData : data;
-  const chartData = finalData?.data;
+  const chartData = finalData?.data || [];
 
   return (
     <Card>
@@ -35,6 +35,8 @@ export default function DashboardCharts({ chartProps }) {
             key={index}
             chartDataset={dataset}
             chartProps={chartProps}
+            dataKey="daily_counts"
+            valueFormatType="MMM d"
           />
         ))}
       </CardContent>
