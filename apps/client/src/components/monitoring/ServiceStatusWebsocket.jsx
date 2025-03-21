@@ -1,7 +1,8 @@
 import { useWebSocket } from "../../hooks/useWebSocket";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Services from "./Services";
 import StatusGrid from "./StatusGrid";
+import Errors from "./Errors";
 
 const transformData = (data) => {
   const groupedData = {};
@@ -19,17 +20,18 @@ const transformData = (data) => {
   }));
 };
 
+const hasValidData = (array) => {
+  return array.every((item) => item?.data);
+};
+
 export default function Websocket() {
   const { message } = useWebSocket("ws://127.0.0.1:8000/ws");
-  const serviceResponses = useMemo(
-    () => message?.service_responses || [],
-    [message]
-  );
+  const { service_responses = [], error_data = {} } = message || {};
   const [serviceStatusHistory, setServiceStatusHistory] = useState([]);
   useEffect(() => {
-    if (serviceResponses.length > 0) {
+    if (service_responses.length > 0 && hasValidData(service_responses)) {
       setServiceStatusHistory((prevHistory) => {
-        const updatedHistory = serviceResponses.map((serviceResponse) => ({
+        const updatedHistory = service_responses.map((serviceResponse) => ({
           friendly_name: serviceResponse.friendly_name,
           status: {
             value: serviceResponse.status_code,
@@ -40,12 +42,13 @@ export default function Websocket() {
         return [...prevHistory, ...updatedHistory].slice(-50);
       });
     }
-  }, [serviceResponses]);
+  }, [service_responses]);
 
   const statusChartData = transformData(serviceStatusHistory);
   return (
     <div>
-      <Services serviceResponses={serviceResponses} />
+      <Errors errors={error_data} />
+      <Services serviceResponses={service_responses} />
       <StatusGrid statusChartData={statusChartData} />
     </div>
   );
