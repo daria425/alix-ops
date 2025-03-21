@@ -15,7 +15,8 @@ async def lifespan(app: FastAPI):
     await control_room_db_connection.close()
 
 
-websocket_manager=WebsocketManager()
+status_websocket_manager=WebsocketManager()
+latency_websocket_manager=WebsocketManager()
 app = FastAPI(lifespan=lifespan)
 
 origins = ["http://localhost:5173"]
@@ -50,18 +51,31 @@ def root():
 #                     clients.remove(client)
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends(), error_db_service: ErrorDatabaseService=Depends()):
+@app.websocket("/status/ws")
+async def websocket_service_status_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends(), error_db_service: ErrorDatabaseService=Depends()):
     """Handles WebSocket connections from clients"""
-    await websocket_manager.connect(websocket)
-    if len(websocket_manager.clients)==1:
-        await asyncio.create_task(websocket_manager.send_monitoring_data(internal_service_monitor, error_db_service))
+    await status_websocket_manager.connect(websocket)
+    if len(status_websocket_manager.clients)==1:
+        await asyncio.create_task(status_websocket_manager.send_monitoring_data(internal_service_monitor, error_db_service))
     try: 
         while True:
             await asyncio.sleep(1)
 
     except WebSocketDisconnect:
-        await websocket_manager.disconnect(websocket)
+        await status_websocket_manager.disconnect(websocket)
+
+@app.websocket("/latency/ws")
+async def websocket_latency_test_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends()):
+    """Handles WebSocket connections from clients"""
+    await latency_websocket_manager.connect(websocket)
+    if len(latency_websocket_manager.clients)==1:
+        await asyncio.create_task(latency_websocket_manager.send_latency_test_data(internal_service_monitor))
+    try: 
+        while True:
+            await asyncio.sleep(1)
+
+    except WebSocketDisconnect:
+        await latency_websocket_manager.disconnect(websocket)
 
 app.include_router(service_status.router)
 app.include_router(platform.router)
