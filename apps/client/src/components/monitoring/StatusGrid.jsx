@@ -4,7 +4,6 @@ import MainCardHeading from "../common/MainCardHeading";
 import StatusChart from "./StatusChart";
 
 export default function StatusGrid({ statusChartData }) {
-  console.log("Status Chart Data in grid:", statusChartData);
   const isMobile = useMediaQuery("(max-width:768px)");
   const isTablet = useMediaQuery("(max-width:1200px)") && !isMobile;
 

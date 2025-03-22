@@ -1,10 +1,9 @@
-import ServiceStatusWebsocket from "./ServiceStatusWebsocket";
-import LatencyWebSocket from "./LatencyWebsocket";
+import WebSocket from "./WebSocket";
+
 export default function Monitoring() {
   return (
     <div>
-      <ServiceStatusWebsocket />
-      <LatencyWebSocket />
+      <WebSocket />
     </div>
   );
 }

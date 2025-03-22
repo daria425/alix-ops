@@ -61,7 +61,11 @@ export default function Dashboard() {
         </Box>
       </Summary>
       {/* <WidgetCard buttons={buttons} cardHeader={"Tools"} /> */}
-      <DashboardCharts chartProps={{ height: 300 }} />
+      <DashboardCharts
+        chartProps={{
+          height: 300,
+        }}
+      />
     </Box>
   );
 }

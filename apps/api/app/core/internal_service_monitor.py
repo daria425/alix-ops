@@ -121,7 +121,7 @@ class InternalServiceMonitor:
             response = requests.post(
                 "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
                 json=self.latency_check_request_body,
-                timeout=10
+                timeout=20
             )
             response_time = round(time.time() - start_time, 2)
             response.raise_for_status()

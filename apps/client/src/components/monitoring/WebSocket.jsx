@@ -1,8 +1,8 @@
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useState, useEffect } from "react";
-import Services from "./Services";
+import Latency from "./Latency";
 import StatusGrid from "./StatusGrid";
-import Errors from "./Errors";
+import ErrorTable from "./ErrorTable";
 
 const transformData = (data) => {
   const groupedData = {};
@@ -24,9 +24,15 @@ const hasValidData = (array) => {
   return array.every((item) => item?.data);
 };
 
-export default function Websocket() {
-  const { message } = useWebSocket("ws://127.0.0.1:8000/status/ws");
-  const { service_responses = [], error_data = {} } = message || {};
+export default function WebSocket() {
+  const { message: serviceStatusMessage } = useWebSocket(
+    "ws://127.0.0.1:8000/status/ws"
+  );
+  const { message: latencyMessage } = useWebSocket(
+    "ws://127.0.0.1:8000/latency/ws"
+  );
+  const { service_responses = [], error_data = {} } =
+    serviceStatusMessage || {};
   const [serviceStatusHistory, setServiceStatusHistory] = useState([]);
   useEffect(() => {
     if (service_responses.length > 0 && hasValidData(service_responses)) {
@@ -47,8 +53,11 @@ export default function Websocket() {
   const statusChartData = transformData(serviceStatusHistory);
   return (
     <div>
-      <Errors errors={error_data} />
-      <Services serviceResponses={service_responses} />
+      <Latency
+        serviceResponses={service_responses}
+        latencyResponse={latencyMessage}
+      />
+      <ErrorTable errorDocuments={error_data?.documents || []} />
       <StatusGrid statusChartData={statusChartData} />
     </div>
   );
