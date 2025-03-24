@@ -3,6 +3,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from app.core.internal_service_monitor import InternalServiceMonitor
 from app.db.db_service import ErrorDatabaseService
 from app.utils.logger import logger
+from datetime import datetime, timezone, timedelta
 class WebsocketManager:
     def __init__(self):
         self.clients=set()
@@ -26,7 +27,15 @@ class WebsocketManager:
                     logger.info("Pinging services...")
                     responses=internal_service_monitor.get_internal_service_responses()
                     logger.info(f"Responses recieved: {responses}")
-                    error_data=await error_db_service.get_all_documents()
+                    now = datetime.now(timezone.utc)
+                    hours_24_ago = now - timedelta(hours=24)
+                    time_filter = {
+                        "timestamp": {
+                            "$gte": hours_24_ago,
+                            "$lte": now
+                        }
+                    }
+                    error_data=await error_db_service.get_all_documents(filters=time_filter)
                     responses['error_data']=error_data
                     await client.send_json(responses)
                 except WebSocketDisconnect:

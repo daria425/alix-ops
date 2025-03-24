@@ -2,7 +2,10 @@ import { useWebSocket } from "../../hooks/useWebSocket";
 import { useState, useEffect } from "react";
 import Latency from "./Latency";
 import StatusGrid from "./StatusGrid";
+import StatusCard from "./StatusCard";
+import StatusTable from "./StatusTable";
 import ErrorTable from "./ErrorTable";
+import ErrorCharts from "./ErrorCharts";
 
 const transformData = (data) => {
   const groupedData = {};
@@ -50,7 +53,10 @@ export default function WebSocket() {
     }
   }, [service_responses]);
 
+  console.log(serviceStatusMessage);
+
   const statusChartData = transformData(serviceStatusHistory);
+  //TO-DO: return loading wrapper if !message
   return (
     <div>
       <Latency
@@ -58,7 +64,10 @@ export default function WebSocket() {
         latencyResponse={latencyMessage}
       />
       <ErrorTable errorDocuments={error_data?.documents || []} />
-      <StatusGrid statusChartData={statusChartData} />
+      <ErrorCharts errorChartData={error_data} />
+      <StatusCard statusData={service_responses} />
+
+      {/* <StatusGrid statusChartData={statusChartData} /> */}
     </div>
   );
 }

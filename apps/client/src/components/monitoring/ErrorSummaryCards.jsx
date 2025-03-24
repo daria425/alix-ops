@@ -9,7 +9,7 @@ const countUniqueKeyValues = (array, key) => {
     return acc;
   }, {});
 };
-export default function ErrorSummary({ errors }) {
+export default function ErrorSummaryCards({ errors }) {
   const summaryTitle = "Errors";
   const { documents = [], total_count = "" } = errors || {};
   const errorData = [
