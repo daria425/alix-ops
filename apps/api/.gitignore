@@ -3,3 +3,6 @@
 __pycache__
 app/credentials/
 app/core/me.json
+*json*
+*keyfile*
+*credentials*

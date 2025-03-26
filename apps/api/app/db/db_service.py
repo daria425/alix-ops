@@ -57,10 +57,21 @@ class ControlRoomDatabaseService(BaseDatabaseService):
         super().__init__(control_room_db_connection, collection_name)
 
 # ------------------------- Specific Database Services -------------------------
-class LogsDatabaseService(AlixOpsDatabaseService):
+class HealthCheckLogsDatabaseService(AlixOpsDatabaseService):
     def __init__(self):
         super().__init__("internal_service_logs")
 
+    async def insert_log_entry(self, log_entry:dict):
+        await self.init_collection()
+        try:
+            inserted_doc=await self.collection.insert_one(log_entry)
+            logger.info(f"Successfully inserted log entry {inserted_doc.inserted_id}")
+        except Exception as e:
+            logger.error(f"Error occurred inserting log entry:{e}")
+
+class UptimeLogsDatabaseService(AlixOpsDatabaseService):
+    def __init__(self):
+        super().__init__("uptime_logs") 
     async def insert_log_entry(self, log_entry:dict):
         await self.init_collection()
         try:

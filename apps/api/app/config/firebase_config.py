@@ -5,8 +5,9 @@ from dotenv import load_dotenv
 from app.utils.logger import logger
 load_dotenv()
 
-whatsapp_control_room_service_account_keyfile_path=os.getenv("WHATSAPP_CONTROL_ROOM_FIREBASE_SERVICE_ACCOUNT_KEYFILE_PATH")
-alix_ops_service_account_keyfile_path=os.getenv("ALIX_OPS_FIREBASE_SERVICE_ACCOUNT_KEYFILE_PATH")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+whatsapp_control_room_service_account_keyfile_path = os.path.join(current_dir, "whatsapp-control-room-firebase-service-account-keyfile.json")
+alix_ops_service_account_keyfile_path = os.path.join(current_dir, "alix-ops-firebase-service-account-keyfile.json")
 
 whatsapp_control_room_cred = credentials.Certificate(whatsapp_control_room_service_account_keyfile_path)
 alix_ops_cred = credentials.Certificate(alix_ops_service_account_keyfile_path)

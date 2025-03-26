@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
-from app.routes import platform, service_status, auth
+from app.routes import platform, service_status, auth, whatsapp_metrics
 from app.services.websocket_manager import WebsocketManager
 from app.core.internal_service_monitor import InternalServiceMonitor
 from app.db.db_service import ErrorDatabaseService
@@ -33,24 +33,6 @@ app.add_middleware(
 def root():
     return {"message": "Hello from FastAPI"}
 
-# async def broadcast():
-#     global count
-#     while clients:
-#             await asyncio.sleep(5)
-#             count +=1
-#             disconnected_clients = []
-#             for client in clients:
-#                 try:
-#                     logger.info(f"Sending update")
-#                     await client.send_text(f"Service Status Update {count}")
-#                 except WebSocketDisconnect:
-#                     disconnected_clients.append(client)
-
-#             async with lock:  # Remove disconnected clients safely
-#                 for client in disconnected_clients:
-#                     clients.remove(client)
-
-
 @app.websocket("/status/ws")
 async def websocket_service_status_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends(), error_db_service: ErrorDatabaseService=Depends()):
     """Handles WebSocket connections from clients"""
@@ -81,3 +63,4 @@ async def websocket_latency_test_endpoint(websocket: WebSocket, internal_service
 app.include_router(service_status.router)
 app.include_router(platform.router)
 app.include_router(auth.router)
+app.include_router(whatsapp_metrics.router)

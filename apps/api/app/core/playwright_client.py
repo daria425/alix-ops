@@ -3,7 +3,8 @@ from playwright.sync_api import sync_playwright, expect
 import os, json
 load_dotenv()
 platform_url=os.getenv("PLATFORM_URL")
-playwright_client_credential_path=os.getenv("PLAYWRIGHT_CLIENT_CREDENTIAL_FILE_PATH")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+playwright_client_credential_path=os.path.join(current_dir, "playwright-client-credentials.json")
 with open(playwright_client_credential_path, "r") as f:
     playwright_client_credentials=json.loads(f.read())
     playwright_client_email=playwright_client_credentials.get("email")

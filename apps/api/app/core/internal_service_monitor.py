@@ -1,5 +1,5 @@
 
-from app.db.db_service import LogsDatabaseService
+from app.db.db_service import HealthCheckLogsDatabaseService
 from app.utils.logger import logger
 import requests, time
 
@@ -179,7 +179,7 @@ class InternalServiceMonitor:
 
 
     
-    async def log_internal_service_status(self, logs_db_service: LogsDatabaseService):
+    async def log_internal_service_status(self, logs_db_service: HealthCheckLogsDatabaseService):
         service_url_responses=self._ping_services(self.service_url_list)
         await logs_db_service.insert_log_entry(service_url_responses)
         logger.info("Monitoring complete")

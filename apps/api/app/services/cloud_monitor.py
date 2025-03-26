@@ -1,5 +1,6 @@
 from google.cloud import monitoring_v3
 from dotenv import load_dotenv
+from datetime import datetime
 import os, time
 load_dotenv()
 
@@ -78,6 +79,7 @@ class CloudMonitor:
         interval = monitoring_v3.TimeInterval(
             {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
         )
+        metric_log_count=[]
         total_count=0
         for metric_name in metric_names:
             filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
@@ -92,13 +94,20 @@ class CloudMonitor:
                     }
                 )
                 metric_count = sum(point.value.int64_value for result in results for point in result.points)
-                print(f"Total count for {metric_name}: {metric_count}")
+                item={
+                    "name": metric_name,
+                    "count": metric_count
+                }
+                metric_log_count.append(item)
                 total_count+=metric_count
             except Exception as e:
                 print(f"Error fetching request count: {e}")
                 return 0
         print(f"Total count for all requests: {total_count}")
-        return total_count
+        return {
+            "total_count": total_count,
+            "metric_log_count": metric_log_count
+        }
     
     def get_all_errors(self, timeframe:int):
         """Get all errors in the given timeframe"""
@@ -109,6 +118,7 @@ class CloudMonitor:
             {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
         )
         total_count=0
+        metric_log_count=[]
         for metric_name in metric_names:
             filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
 
@@ -122,18 +132,28 @@ class CloudMonitor:
                     }
                 )
                 metric_count = sum(point.value.int64_value for result in results for point in result.points)
-                print(f"Total count for {metric_name}: {metric_count}")
+                item={
+                    "name": metric_name,
+                    "count": metric_count
+                }
+                metric_log_count.append(item)
                 total_count+=metric_count
             except Exception as e:
                 print(f"Error fetching error count: {e}")
                 return 0
         print(f"Total count for all errors: {total_count}")
-        return total_count
+
+        return {
+            "total_count": total_count,
+            "metric_log_count": metric_log_count
+        }
     
     def calculate_total_uptime(self, timeframe:int):
         """Calculate uptime percentage for the given timeframe"""
-        total_errors=self.get_all_errors(timeframe)
-        total_requests=self.get_all_requests(timeframe)
+        error_data=self.get_all_errors(timeframe)
+        request_data=self.get_all_requests(timeframe)
+        total_requests=request_data["total_count"]
+        total_errors=error_data["total_count"]
         if total_requests == 0:
             print("No requests found in the given timeframe, assuming 100% uptime")
             return 100.0
@@ -141,5 +161,11 @@ class CloudMonitor:
             total_errors = total_requests
         uptime = (total_requests - total_errors) / total_requests * 100
         print(f"Uptime: {uptime:.2f}% (Requests: {total_requests}, Errors: {total_errors})")
-        return uptime
+        timestamp=datetime.now().isoformat()
+        return {
+            "timestamp": timestamp,
+            "uptime": uptime,
+            "request_data": request_data,
+            "error_data": error_data
+        }
         
