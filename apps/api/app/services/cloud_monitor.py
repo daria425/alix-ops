@@ -1,0 +1,145 @@
+from google.cloud import monitoring_v3
+from dotenv import load_dotenv
+import os, time
+load_dotenv()
+
+
+MONITORING_PROJECT_ID = os.getenv("MONITORING_PROJECT_ID")
+
+class CloudMonitor:
+    def __init__(self):
+        self.client = monitoring_v3.MetricServiceClient()
+        self.project_id = MONITORING_PROJECT_ID
+        self.project_name = f"projects/{self.project_id}"
+
+    def list_custom_metrics(self, metric_type:str):
+        """Returns a list of user-defined custom metrics"""
+        try:
+            # List metric descriptors for custom metrics only
+            request = monitoring_v3.ListMetricDescriptorsRequest(
+                name=self.project_name,
+                filter='metric.type = starts_with("logging.googleapis.com/user/")'
+            
+            )
+            response = self.client.list_metric_descriptors(request=request)
+            custom_metrics = []
+            print("User-defined Custom Metrics:")
+            for metric in response:
+                metric_name = metric.type.split('logging.googleapis.com/user/')[-1]
+                if metric_type=="log":
+                    if "error" not in metric_name and "health" not in metric_name and "latency" not in metric_name:
+                        custom_metrics.append({
+                            "name": metric_name, 
+                            "display_name": metric.display_name,
+                            "description": metric.description
+                        })
+                elif metric_type=="error":
+                    if "error" in metric_name:
+                        custom_metrics.append({
+                            "name": metric_name, 
+                            "display_name": metric.display_name,
+                            "description": metric.description
+                        })
+            return custom_metrics
+        except Exception as e:
+            print(f"Error fetching custom metrics: {e}")
+            return []
+
+    def get_metric_count(self, timeframe: int, metric_name: str):
+        """Get count for the specified metric in the given timeframe."""
+        end_time = time.time()
+        start_time = end_time - timeframe
+        interval = monitoring_v3.TimeInterval(
+            {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
+        )
+        filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
+
+        try:
+            results = self.client.list_time_series(
+                request={
+                    "name": self.project_name,
+                    "filter": filter_str,
+                    "interval": interval,
+                    "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+                }
+            )
+            total_count = sum(point.value.int64_value for result in results for point in result.points)
+            print(f"Total count for {metric_name}: {total_count}")
+            return total_count
+        except Exception as e:
+            print(f"Error fetching metric count: {e}")
+            return 0
+        
+    def get_all_requests(self, timeframe: int):
+        """Get all requests in the given timeframe"""
+        metric_names=["webhook-log", "all-llm-log", "all-flow-log"]
+        end_time = time.time()
+        start_time = end_time - timeframe
+        interval = monitoring_v3.TimeInterval(
+            {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
+        )
+        total_count=0
+        for metric_name in metric_names:
+            filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
+
+            try:
+                results = self.client.list_time_series(
+                    request={
+                        "name": self.project_name,
+                        "filter": filter_str,
+                        "interval": interval,
+                        "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+                    }
+                )
+                metric_count = sum(point.value.int64_value for result in results for point in result.points)
+                print(f"Total count for {metric_name}: {metric_count}")
+                total_count+=metric_count
+            except Exception as e:
+                print(f"Error fetching request count: {e}")
+                return 0
+        print(f"Total count for all requests: {total_count}")
+        return total_count
+    
+    def get_all_errors(self, timeframe:int):
+        """Get all errors in the given timeframe"""
+        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error"]
+        end_time = time.time()
+        start_time = end_time - timeframe
+        interval = monitoring_v3.TimeInterval(
+            {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
+        )
+        total_count=0
+        for metric_name in metric_names:
+            filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
+
+            try:
+                results = self.client.list_time_series(
+                    request={
+                        "name": self.project_name,
+                        "filter": filter_str,
+                        "interval": interval,
+                        "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+                    }
+                )
+                metric_count = sum(point.value.int64_value for result in results for point in result.points)
+                print(f"Total count for {metric_name}: {metric_count}")
+                total_count+=metric_count
+            except Exception as e:
+                print(f"Error fetching error count: {e}")
+                return 0
+        print(f"Total count for all errors: {total_count}")
+        return total_count
+    
+    def calculate_total_uptime(self, timeframe:int):
+        """Calculate uptime percentage for the given timeframe"""
+        total_errors=self.get_all_errors(timeframe)
+        total_requests=self.get_all_requests(timeframe)
+        if total_requests == 0:
+            print("No requests found in the given timeframe, assuming 100% uptime")
+            return 100.0
+        if total_errors > total_requests:
+            total_errors = total_requests
+        uptime = (total_requests - total_errors) / total_requests * 100
+        print(f"Uptime: {uptime:.2f}% (Requests: {total_requests}, Errors: {total_errors})")
+        return uptime
+        

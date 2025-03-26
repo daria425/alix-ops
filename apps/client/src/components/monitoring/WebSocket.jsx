@@ -53,8 +53,6 @@ export default function WebSocket() {
     }
   }, [service_responses]);
 
-  console.log(serviceStatusMessage);
-
   const statusChartData = transformData(serviceStatusHistory);
   //TO-DO: return loading wrapper if !message
   return (
@@ -63,7 +61,6 @@ export default function WebSocket() {
         serviceResponses={service_responses}
         latencyResponse={latencyMessage}
       />
-      <ErrorTable errorDocuments={error_data?.documents || []} />
       <ErrorCharts errorChartData={error_data} />
       <StatusCard statusData={service_responses} />
 

@@ -32,16 +32,17 @@ class BaseDatabaseService:
             raise RuntimeError("Database connection is not initialized. Call `connect()` first.")
         self.collection = self.db_connection.db[self.collection_name]
 
-    async def get_all_documents(self):
+    async def get_all_documents(self, filters=None):
         await self.init_collection()
         try:
+            query = filters or {}
             return {
-                "documents": convert_objectid(await self.collection.find({}).to_list(None)),
-                "total_count": await self.collection.count_documents({})
+                "documents": convert_objectid(await self.collection.find(query).to_list(None)),
+                "total_count": await self.collection.count_documents(query)
             }
         except Exception as e:
             logger.error(f"Error occurred getting all collection data: {e}")
-            return []
+            return {"documents": [], "total_count": 0}
 
 class AlixOpsDatabaseService(BaseDatabaseService):
     """Base class for collections in the Alix Ops database."""

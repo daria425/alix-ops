@@ -17,11 +17,30 @@ const accumulateByService = (errors) => {
 };
 
 export default function ErrorCharts({ errorChartData }) {
-  const hasErrors =
-    errorChartData?.total_count && errorChartData.total_count > 0;
+  const isLoading = Object.keys(errorChartData).length === 0;
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent>
+          <MainCardHeading title="Errors - Last 24 hours" />
+          <div
+            style={{
+              height: 300,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "text.secondary",
+            }}
+          >
+            Loading...
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  const hasErrors = errorChartData?.total_count > 0;
   const errorData = errorChartData?.documents || [];
   const accumulatedData = accumulateByService(errorData);
-  console.log(accumulatedData);
   const dataset = accumulatedData.map(({ service, count }) => ({
     label: service,
     value: count,

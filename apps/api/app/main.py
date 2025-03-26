@@ -54,6 +54,7 @@ def root():
 @app.websocket("/status/ws")
 async def websocket_service_status_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends(), error_db_service: ErrorDatabaseService=Depends()):
     """Handles WebSocket connections from clients"""
+    print("Status websocket connected")
     await status_websocket_manager.connect(websocket)
     if len(status_websocket_manager.clients)==1:
         await asyncio.create_task(status_websocket_manager.send_monitoring_data(internal_service_monitor, error_db_service))
