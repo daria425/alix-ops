@@ -11,6 +11,7 @@ async def get_total_uptime(request: Request, timeframe:int, cloud_monitor: Cloud
         data=cloud_monitor.calculate_total_uptime(timeframe)
         if "X-Cron-Job" in request.headers:
             await db_service.insert_log_entry(data)
+        data.pop("_id", None)
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
