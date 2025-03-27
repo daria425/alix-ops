@@ -2,8 +2,7 @@ from app.db.db_connection import alix_ops_db_connection, control_room_db_connect
 from app.utils.logger import logger
 from app.utils.dates import fill_dates
 from bson.objectid import ObjectId
-from bson import json_util
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pymongo import ReturnDocument
 
 def convert_objectid(doc):
@@ -157,7 +156,7 @@ class FlowDatabaseService(ControlRoomDatabaseService):
             logger.info(f"Successfully inserted flow {inserted_doc.inserted_id}")
         except Exception as e:
             logger.error(f"Error occurred inserting flow:{e}")
-
+    
 class MessageDatabaseService(ControlRoomDatabaseService):
     def __init__(self):
         super().__init__("messages")
@@ -235,6 +234,26 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
             }
         except Exception as e:
             logger.error(f"Error occurred counting flows:{e}")  
+    async def get_flows_by_timeframe(self, time:int):
+        """Get all flows started in the given timeframe
+        Args:
+            time (int): Timeframe in seconds
+        """
+        await self.init_collection()
+        try:
+            end_time = datetime.now(timezone.utc)
+            start_time = end_time - timedelta(seconds=time)
+            query = {
+            "CreatedAt": {
+                "$gte": {"$date": int(start_time.timestamp() * 1000)},
+                "$lte": {"$date": int(end_time.timestamp() * 1000)}
+            }
+        }
+            flows=await self.get_all_documents(query)
+            return flows
+        except Exception as e:
+            logger.error(f"Error occurred getting flows by timeframe:{e}")
+
 class AlixOpsUserService(AlixOpsDatabaseService):
     def __init__(self):
         super().__init__("users")

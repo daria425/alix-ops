@@ -1,9 +1,8 @@
-import WebSocket from "./WebSocket";
-
+import MonitorDashboard from "./MonitorDashboard";
 export default function Monitoring() {
   return (
     <div>
-      <WebSocket />
+      <MonitorDashboard />
     </div>
   );
 }

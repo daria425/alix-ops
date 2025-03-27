@@ -8,7 +8,7 @@ export default function MainCardHeading({ title, additonalStyles }) {
         mb: 1,
         mt: 1,
         fontWeight: "500",
-        fontSize: "2rem",
+        fontSize: "1.3rem",
         ...additonalStyles,
       }}
     >

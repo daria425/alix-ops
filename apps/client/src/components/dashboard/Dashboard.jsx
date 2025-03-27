@@ -1,9 +1,8 @@
 import DashboardCharts from "./DashboardCharts";
 import { useData } from "../../hooks/useData";
-import LoadingState from "../common/LoadingState";
 import { Box, Typography, Button } from "@mui/material";
 import { mockDashboardData } from "../../../mockData/mockDashboardData";
-import FetchError from "../common/FetchError";
+import { LoadingState, ErrorState } from "../common/FetchStates";
 import Summary from "../common/Summary";
 import WidgetCard from "../common/WidgetCard";
 import TryIcon from "@mui/icons-material/Try";
@@ -28,7 +27,7 @@ export default function Dashboard() {
   if (isLoading) {
     return <LoadingState />;
   } else if (error) {
-    return <FetchError error={error} />;
+    return <ErrorState error={error} />;
   }
 
   return (

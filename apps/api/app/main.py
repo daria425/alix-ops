@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.db_connection import alix_ops_db_connection, control_room_db_connection
-from app.routes import platform, service_status, auth, whatsapp_metrics
+from app.routes import monitoring, platform, service_status, auth
 from app.services.websocket_manager import WebsocketManager
 from app.core.internal_service_monitor import InternalServiceMonitor
 from app.db.db_service import ErrorDatabaseService
@@ -63,4 +63,4 @@ async def websocket_latency_test_endpoint(websocket: WebSocket, internal_service
 app.include_router(service_status.router)
 app.include_router(platform.router)
 app.include_router(auth.router)
-app.include_router(whatsapp_metrics.router)
+app.include_router(monitoring.router)
