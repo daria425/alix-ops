@@ -1,5 +1,5 @@
 import { Card, CardContent, Button } from "@mui/material";
-import MainCardHeading from "./MainCardHeading";
+import { MainCardHeading } from "./CardContents";
 export default function WidgetCard({ cardHeader, buttons }) {
   return (
     <Card>

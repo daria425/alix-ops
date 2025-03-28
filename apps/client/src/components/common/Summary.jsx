@@ -1,6 +1,6 @@
 import { Grid2, Card, CardContent } from "@mui/material";
 import StatsCard from "./StatsCard";
-import MainCardHeading from "./MainCardHeading";
+import { MainCardHeading } from "./CardContents";
 export default function Summary({ summaryTitle, summaryData, children }) {
   return (
     <Card>

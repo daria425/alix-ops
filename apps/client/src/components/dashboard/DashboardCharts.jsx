@@ -1,5 +1,5 @@
-import CustomLineChart from "../common/CustomLineChart";
-import MainCardHeading from "../common/MainCardHeading";
+import { CustomLineChart } from "../common/CustomCharts";
+import { MainCardHeading } from "../common/CardContents";
 import { Card, CardContent, Typography, Grid2 } from "@mui/material";
 import { mockChartData } from "../../../mockData/mockChartData";
 import { useData } from "../../hooks/useData";
@@ -28,7 +28,7 @@ export default function DashboardCharts({ chartProps }) {
       <CardContent sx={cardLayoutStyle}>
         <MainCardHeading
           title="WhatsApp Activity"
-          additonalStyles={!isMobile ? { gridColumn: "span 2" } : {}}
+          additionalStyles={!isMobile ? { gridColumn: "span 2" } : {}}
         />
         {chartData.map((dataset, index) => (
           <CustomLineChart

@@ -1,7 +1,8 @@
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Box, Typography } from "@mui/material";
+import { BarChart } from "@mui/x-charts/BarChart";
 
-export default function CustomLineChart({
+function CustomLineChart({
   chartDataset,
   chartProps,
   dataKey,
@@ -63,3 +64,17 @@ export default function CustomLineChart({
     </Box>
   );
 }
+
+function CustomBarChart({ dataset, chartProps, seriesProps, xAxisProps }) {
+  const labels = dataset.map((data) => data.label);
+  const series = dataset.map((data) => data.value);
+  return (
+    <BarChart
+      xAxis={[{ scaleType: "band", data: labels, ...xAxisProps }]}
+      series={[{ data: series, ...seriesProps }]}
+      {...chartProps}
+    />
+  );
+}
+
+export { CustomLineChart, CustomBarChart };

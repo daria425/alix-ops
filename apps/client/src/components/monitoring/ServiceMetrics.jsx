@@ -3,8 +3,8 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@mui/material";
-import MainCardHeading from "../common/MainCardHeading";
-import CustomBarChart from "../common/CustomBarChart";
+import { MainCardHeading } from "../common/CardContents";
+import { CustomBarChart } from "../common/CustomCharts";
 
 //eslint-disable-next-line
 const transformData = (data) => {
@@ -31,7 +31,6 @@ export default function ServiceMetrics() {
   const { message: serviceStatusMessage } = useWebSocket(
     "ws://127.0.0.1:8000/status/ws"
   );
-  console.log(serviceStatusMessage);
   const { service_responses = [] } = serviceStatusMessage || {};
   //eslint-disable-next-line
   const [serviceStatusHistory, setServiceStatusHistory] = useState([]);
@@ -58,9 +57,9 @@ export default function ServiceMetrics() {
     ? { flexDirection: "column" }
     : { flexDirection: "row" };
   return (
-    <Card sx={{ minWidth: "300px" }}>
+    <Card sx={{ minWidth: "300px", flexGrow: 1 }}>
       <CardContent>
-        <MainCardHeading title="Service Latency" />
+        <MainCardHeading title="SERVICE LATENCY" />
         {service_responses.length > 0 ? (
           <CustomBarChart
             dataset={service_responses.map(

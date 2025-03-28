@@ -1,7 +1,7 @@
 import CustomTable from "../common/CustomTable";
 import { parseISO, format } from "date-fns";
 import { Card, CardContent } from "@mui/material";
-import MainCardHeading from "../common/MainCardHeading";
+import { MainCardHeading } from "../common/CardContents";
 export default function ErrorTable({ errorDocuments }) {
   const tableData = {
     headers: ["Error", "Date", "Time", "Service"],

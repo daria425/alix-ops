@@ -1,6 +1,6 @@
-import CustomBarChart from "../common/CustomBarChart";
+import { CustomBarChart } from "../common/CustomCharts";
 import { Card, CardContent } from "@mui/material";
-import MainCardHeading from "../common/MainCardHeading";
+import { MainCardHeading } from "../common/CardContents";
 
 const accumulateByService = (errors) => {
   const groupedData = errors.reduce((acc, error) => {

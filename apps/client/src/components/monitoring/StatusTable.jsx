@@ -1,6 +1,6 @@
 import CustomTable from "../common/CustomTable";
 import { Card, CardContent } from "@mui/material";
-import MainCardHeading from "../common/MainCardHeading";
+import { MainCardHeading } from "../common/CardContents";
 import { format } from "date-fns";
 
 export default function StatusTable({ statusData }) {
