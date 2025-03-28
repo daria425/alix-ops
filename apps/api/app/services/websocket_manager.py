@@ -18,7 +18,7 @@ class WebsocketManager:
         async with self.lock:
             self.clients.discard(websocket)
 
-    async def send_monitoring_data(self, internal_service_monitor: InternalServiceMonitor, error_db_service: ErrorDatabaseService):
+    async def send_monitoring_data(self, internal_service_monitor: InternalServiceMonitor):
         while self.clients:
             await asyncio.sleep(5)
             disconnected_clients=[]
@@ -35,8 +35,6 @@ class WebsocketManager:
                             "$lte": now
                         }
                     }
-                    error_data=await error_db_service.get_all_documents(filters=time_filter)
-                    responses['error_data']=error_data
                     await client.send_json(responses)
                 except WebSocketDisconnect:
                     disconnected_clients.append(client)

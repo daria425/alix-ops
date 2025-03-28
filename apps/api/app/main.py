@@ -4,7 +4,6 @@ from app.db.db_connection import alix_ops_db_connection, control_room_db_connect
 from app.routes import monitoring, platform, service_status, auth
 from app.services.websocket_manager import WebsocketManager
 from app.core.internal_service_monitor import InternalServiceMonitor
-from app.db.db_service import ErrorDatabaseService
 import asyncio
 
 async def lifespan(app: FastAPI):
@@ -34,12 +33,11 @@ def root():
     return {"message": "Hello from FastAPI"}
 
 @app.websocket("/status/ws")
-async def websocket_service_status_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends(), error_db_service: ErrorDatabaseService=Depends()):
+async def websocket_service_status_endpoint(websocket: WebSocket, internal_service_monitor: InternalServiceMonitor=Depends()):
     """Handles WebSocket connections from clients"""
     print("Status websocket connected")
     await status_websocket_manager.connect(websocket)
-    if len(status_websocket_manager.clients)==1:
-        await asyncio.create_task(status_websocket_manager.send_monitoring_data(internal_service_monitor, error_db_service))
+    await asyncio.create_task(status_websocket_manager.send_monitoring_data(internal_service_monitor))
     try: 
         while True:
             await asyncio.sleep(1)
