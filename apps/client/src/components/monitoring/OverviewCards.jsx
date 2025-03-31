@@ -72,9 +72,9 @@ export default function OverviewCards() {
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "50% 50%",
-        gap: 2,
+        gridTemplateColumns: "1fr 1fr",
         gridTemplateRows: "1fr 1fr",
+        gap: 2,
       }}
     >
       {Object.entries(data).map(([key, value]) => (

@@ -1,6 +1,6 @@
 from google.cloud import monitoring_v3
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os, time
 load_dotenv()
 
@@ -24,7 +24,6 @@ class CloudMonitor:
             )
             response = self.client.list_metric_descriptors(request=request)
             custom_metrics = []
-            print("User-defined Custom Metrics:")
             for metric in response:
                 metric_name = metric.type.split('logging.googleapis.com/user/')[-1]
                 if metric_type=="log":
@@ -148,6 +147,87 @@ class CloudMonitor:
             "metric_log_count": metric_log_count
         }
     
+    def get_request_timeseries(self, timeframe:int):
+        """Get all requests in the given timeframe, and return a dict with timestamp as key and count as value."""
+        metric_names = ["webhook-log", "all-llm-log", "all-flow-log"]
+        end_time = time.time()
+        start_time = end_time - timeframe
+        interval = monitoring_v3.TimeInterval(
+            {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
+        )
+        request_data = {}
+
+        # Initialize all dates with 0 counts
+        current_date = datetime.fromtimestamp(start_time, timezone.utc).date()
+        end_date = datetime.fromtimestamp(end_time, timezone.utc).date()
+        while current_date <= end_date:
+            request_data[current_date.isoformat()] = {metric_name: 0 for metric_name in metric_names}
+            current_date += timedelta(days=1)
+
+        for metric_name in metric_names:
+            filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
+
+            try:
+                results = self.client.list_time_series(
+                    request={
+                        "name": self.project_name,
+                        "filter": filter_str,
+                        "interval": interval,
+                        "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+                    }
+                )
+                for result in results:
+                    for point in result.points:
+                        timestamp = datetime.fromtimestamp(point.interval.start_time.timestamp(), timezone.utc)
+                        date_key = timestamp.date().isoformat()
+                        count = point.value.int64_value
+                        request_data[date_key][metric_name] += count
+
+            except Exception as e:
+                print(f"Error fetching request count: {e}")
+                return {}
+        return request_data
+    
+    def get_error_timeseries(self, timeframe:int):
+        """Get all errors in the given timeframe, and return a dict with timestamp as key and count as value."""
+        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error"]
+        end_time = time.time()
+        start_time = end_time - timeframe
+        interval = monitoring_v3.TimeInterval(
+            {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
+        )
+        request_data = {}
+        current_date = datetime.fromtimestamp(start_time, timezone.utc).date()
+        end_date = datetime.fromtimestamp(end_time, timezone.utc).date()
+        while current_date <= end_date:
+            request_data[current_date.isoformat()] = {metric_name: 0 for metric_name in metric_names}
+            current_date += timedelta(days=1)
+
+        for metric_name in metric_names:
+            filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
+
+            try:
+                results = self.client.list_time_series(
+                    request={
+                        "name": self.project_name,
+                        "filter": filter_str,
+                        "interval": interval,
+                        "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
+                    }
+                )
+                for result in results:
+                    for point in result.points:
+                        timestamp = datetime.fromtimestamp(point.interval.start_time.timestamp(), timezone.utc)
+                        date_key = timestamp.date().isoformat()
+                        count = point.value.int64_value
+                        request_data[date_key][metric_name] += count
+
+            except Exception as e:
+                print(f"Error fetching request count: {e}")
+                return {}
+        return request_data
+    
+    
     def calculate_total_uptime(self, timeframe:int):
         """Calculate uptime percentage for the given timeframe"""
         error_data=self.get_all_errors(timeframe)
@@ -169,3 +249,5 @@ class CloudMonitor:
             "error_data": error_data
         }
         
+
+

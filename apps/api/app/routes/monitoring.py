@@ -40,3 +40,17 @@ async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/activity")
+async def get_whatsapp_activity(cloud_monitor: CloudMonitor = Depends()):
+    """Get total WhatsApp activity"""
+    try:
+        request_timeseries=cloud_monitor.get_request_timeseries(432000)
+        error_timeseries=cloud_monitor.get_error_timeseries(432000)
+        data={
+            "request_timeseries": request_timeseries,
+            "error_timeseries": error_timeseries
+        }
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
