@@ -1,16 +1,26 @@
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Box, Typography } from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
-
-function CustomLineChart({
+import { cyan } from "@mui/material/colors";
+function SingleLineChart({
   chartDataset,
   chartProps,
-  dataKey,
   valueFormatType,
+  dataKey = null,
 }) {
   const { label = "", dataset = [] } = chartDataset;
-  const series = dataset?.[dataKey]?.map((d) => d.value);
-  const labels = dataset?.[dataKey]?.map((d) => new Date(d.date));
+
+  let series, labels;
+
+  if (dataKey && dataset?.[dataKey]) {
+    // If dataKey is provided, use it to access nested data
+    series = dataset[dataKey].map((d) => d.value);
+    labels = dataset[dataKey].map((d) => new Date(d.date));
+  } else {
+    // If dataKey is not provided, assume dataset is already the array we need
+    series = dataset.map((d) => d.value);
+    labels = dataset.map((d) => new Date(d.date));
+  }
   const valueFormatterConfig = {
     "MMM d": (d) =>
       d.toLocaleDateString("en-US", {
@@ -56,7 +66,7 @@ function CustomLineChart({
               stroke: "#ccc", // Grid color
               strokeWidth: 1, // Grid thickness
             }}
-            series={[{ data: series, showMark: false }]}
+            series={[{ data: series, showMark: false, color: cyan[400] }]}
             {...chartProps}
           />
         </>
@@ -71,10 +81,12 @@ function CustomBarChart({ dataset, chartProps, seriesProps, xAxisProps }) {
   return (
     <BarChart
       xAxis={[{ scaleType: "band", data: labels, ...xAxisProps }]}
-      series={[{ data: series, ...seriesProps }]}
+      series={[
+        { data: series, ...seriesProps, color: chartProps?.color || cyan[400] },
+      ]}
       {...chartProps}
     />
   );
 }
 
-export { CustomLineChart, CustomBarChart };
+export { SingleLineChart, CustomBarChart };

@@ -249,7 +249,7 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
                 "$lte": end_time
             }
         }
-            print(query)
+      
             flows=await self.get_all_documents(query)
             return flows
         except Exception as e:

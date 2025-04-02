@@ -30,7 +30,6 @@ async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_
         total_errors=cloud_monitor.get_all_errors(86400)
         total_uptime=cloud_monitor.calculate_total_uptime(86400)
         flows_executed=await flow_history_db_service.get_flows_by_timeframe(86400)
-        print(flows_executed)
         data= {
             "total_errors": total_errors.get("total_count", 0),
             "total_uptime": total_uptime, 
@@ -46,8 +45,8 @@ async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_
 async def get_whatsapp_activity(cloud_monitor: CloudMonitor = Depends()):
     """Get total WhatsApp activity"""
     try:
-        request_timeseries=cloud_monitor.get_request_timeseries(432000)
-        error_timeseries=cloud_monitor.get_error_timeseries(432000)
+        request_timeseries=cloud_monitor.get_request_timeseries(604800)
+        error_timeseries=cloud_monitor.get_error_timeseries(604800)
         data={
             "request_timeseries": request_timeseries,
             "error_timeseries": error_timeseries

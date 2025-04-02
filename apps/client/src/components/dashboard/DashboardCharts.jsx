@@ -1,6 +1,6 @@
-import { CustomLineChart } from "../common/CustomCharts";
+import { SingleLineChart } from "../common/CustomCharts";
 import { MainCardHeading } from "../common/CardContents";
-import { Card, CardContent, Typography, Grid2 } from "@mui/material";
+import { Card, CardContent } from "@mui/material";
 import { mockChartData } from "../../../mockData/mockChartData";
 import { useData } from "../../hooks/useData";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -31,7 +31,7 @@ export default function DashboardCharts({ chartProps }) {
           additionalStyles={!isMobile ? { gridColumn: "span 2" } : {}}
         />
         {chartData.map((dataset, index) => (
-          <CustomLineChart
+          <SingleLineChart
             key={index}
             chartDataset={dataset}
             chartProps={chartProps}

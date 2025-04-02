@@ -161,7 +161,7 @@ class CloudMonitor:
         current_date = datetime.fromtimestamp(start_time, timezone.utc).date()
         end_date = datetime.fromtimestamp(end_time, timezone.utc).date()
         while current_date <= end_date:
-            request_data[current_date.isoformat()] = {metric_name: 0 for metric_name in metric_names}
+            request_data[current_date.isoformat()] = {"total_count":0, "metrics": {metric_name: 0 for metric_name in metric_names}}
             current_date += timedelta(days=1)
 
         for metric_name in metric_names:
@@ -181,7 +181,8 @@ class CloudMonitor:
                         timestamp = datetime.fromtimestamp(point.interval.start_time.timestamp(), timezone.utc)
                         date_key = timestamp.date().isoformat()
                         count = point.value.int64_value
-                        request_data[date_key][metric_name] += count
+                        request_data[date_key]["metrics"][metric_name] += count
+                        request_data[date_key]["total_count"] += count
 
             except Exception as e:
                 print(f"Error fetching request count: {e}")
@@ -200,7 +201,10 @@ class CloudMonitor:
         current_date = datetime.fromtimestamp(start_time, timezone.utc).date()
         end_date = datetime.fromtimestamp(end_time, timezone.utc).date()
         while current_date <= end_date:
-            request_data[current_date.isoformat()] = {metric_name: 0 for metric_name in metric_names}
+            request_data[current_date.isoformat()] = {
+                "total_count": 0,
+                "metrics": {metric_name: 0 for metric_name in metric_names}
+            }
             current_date += timedelta(days=1)
 
         for metric_name in metric_names:
@@ -220,7 +224,8 @@ class CloudMonitor:
                         timestamp = datetime.fromtimestamp(point.interval.start_time.timestamp(), timezone.utc)
                         date_key = timestamp.date().isoformat()
                         count = point.value.int64_value
-                        request_data[date_key][metric_name] += count
+                        request_data[date_key]["metrics"][metric_name] += count
+                        request_data[date_key]["total_count"] += count
 
             except Exception as e:
                 print(f"Error fetching request count: {e}")
