@@ -3,13 +3,21 @@ import { Card, CardContent, Box, Typography, Grid2 } from "@mui/material";
 import { MainCardHeading } from "../common/CardContents";
 import { LoadingState, ErrorState } from "../common/FetchStates";
 import { useData } from "../../hooks/useData";
-import { red, cyan } from "@mui/material/colors";
+import { red, cyan, grey } from "@mui/material/colors";
 
 function ActivityLegend({ legendData }) {
   return (
-    <Grid2 container size={6}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        gap: 4,
+        bgcolor: grey[100],
+        p: 2,
+      }}
+    >
       {legendData.map((item, index) => (
-        <Box key={index} sx={{ flexGrow: 1 }}>
+        <Box key={index}>
           <Typography variant="body2" color="textSecondary">
             {item.label}
           </Typography>
@@ -28,7 +36,7 @@ function ActivityLegend({ legendData }) {
           </Grid2>
         </Box>
       ))}
-    </Grid2>
+    </Box>
   );
 }
 
