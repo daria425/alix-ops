@@ -241,13 +241,5 @@ class CloudMonitor:
             total_errors = total_requests
         uptime = (total_requests - total_errors) / total_requests * 100
         print(f"Uptime: {uptime:.2f}% (Requests: {total_requests}, Errors: {total_errors})")
-        timestamp=datetime.now().isoformat()
-        return {
-            "timestamp": timestamp,
-            "uptime": uptime,
-            "request_data": request_data,
-            "error_data": error_data
-        }
-        
-
+        return uptime
 

@@ -30,6 +30,7 @@ async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_
         total_errors=cloud_monitor.get_all_errors(86400)
         total_uptime=cloud_monitor.calculate_total_uptime(86400)
         flows_executed=await flow_history_db_service.get_flows_by_timeframe(86400)
+        print(flows_executed)
         data= {
             "total_errors": total_errors.get("total_count", 0),
             "total_uptime": total_uptime, 

@@ -245,10 +245,11 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
             start_time = end_time - timedelta(seconds=time)
             query = {
             "CreatedAt": {
-                "$gte": {"$date": int(start_time.timestamp() * 1000)},
-                "$lte": {"$date": int(end_time.timestamp() * 1000)}
+                "$gte": start_time,
+                "$lte": end_time
             }
         }
+            print(query)
             flows=await self.get_all_documents(query)
             return flows
         except Exception as e:
