@@ -10,17 +10,10 @@ function SingleLineChart({
 }) {
   const { label = "", dataset = [] } = chartDataset;
 
-  let series, labels;
+  // If dataKey is provided, use it to access nested data
+  const series = dataset?.[dataKey].map((d) => d.value);
+  const labels = dataset?.[dataKey].map((d) => new Date(d.date));
 
-  if (dataKey && dataset?.[dataKey]) {
-    // If dataKey is provided, use it to access nested data
-    series = dataset[dataKey].map((d) => d.value);
-    labels = dataset[dataKey].map((d) => new Date(d.date));
-  } else {
-    // If dataKey is not provided, assume dataset is already the array we need
-    series = dataset.map((d) => d.value);
-    labels = dataset.map((d) => new Date(d.date));
-  }
   const valueFormatterConfig = {
     "MMM d": (d) =>
       d.toLocaleDateString("en-US", {

@@ -4,6 +4,7 @@ from app.utils.dates import fill_dates
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta, timezone
 from pymongo import ReturnDocument
+import math
 
 def convert_objectid(doc):
     if isinstance(doc, list):
@@ -31,17 +32,42 @@ class BaseDatabaseService:
             raise RuntimeError("Database connection is not initialized. Call `connect()` first.")
         self.collection = self.db_connection.db[self.collection_name]
 
-    async def get_all_documents(self, filters=None):
+    async def get_all_documents(self, filters=None, use_pagination=False, page=1, page_size=10):
         await self.init_collection()
         try:
             query = filters or {}
-            return {
-                "documents": convert_objectid(await self.collection.find(query).to_list(None)),
-                "total_count": await self.collection.count_documents(query)
-            }
+            total_count = await self.collection.count_documents(query)
+            
+            if use_pagination:
+                skip = (page - 1) * page_size
+                
+                # Get paginated results
+                cursor = self.collection.find(query).skip(skip).limit(page_size)
+                documents = convert_objectid(await cursor.to_list(None))
+                
+                return {
+                    "documents": documents,
+                    "total_count": total_count,
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": math.ceil(total_count / page_size) if page_size > 0 else 1
+                }
+            else:
+                # Get all results
+                cursor = self.collection.find(query)
+                documents = convert_objectid(await cursor.to_list(None))
+                
+                return {
+                    "documents": documents,
+                    "total_count": total_count,
+                    "page": 1,
+                    "page_size": total_count,
+                    "total_pages": 1
+                }
+        
         except Exception as e:
-            logger.error(f"Error occurred getting all collection data: {e}")
-            return {"documents": [], "total_count": 0}
+                logger.error(f"Error occurred getting all collection data: {e}")
+                return {"documents": [], "total_count": 0, "page": page, "page_size": page_size, "total_pages": 0}
 
 class AlixOpsDatabaseService(BaseDatabaseService):
     """Base class for collections in the Alix Ops database."""
@@ -206,24 +232,29 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
         await self.init_collection()
         try:
             pipeline = [
-        {
-            "$project": {
-                "day": {
-                    "$dateToString": {"format": "%Y-%m-%d", "date": "$CreatedAt"}
+                {
+                    "$match": {
+                        "flowName": {"$ne": "latency-test"}  # Filter out latency-test flows
+                    }
                 },
-                "flowName": 1  # Keep the flow name
-            }
-        },
-        {
-            "$group": {
-                "_id": "$day",  # Group by day
-                "flowsStarted": {"$sum": 1}  # Count flows
-            }
-        },
-        {
-            "$sort": {"_id": 1}  # Sort by date
-        }
-    ]
+                {
+                    "$project": {
+                        "day": {
+                            "$dateToString": {"format": "%Y-%m-%d", "date": "$CreatedAt"}
+                        },
+                        "flowName": 1  # Keep the flow name
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$day",  # Group by day
+                        "flowsStarted": {"$sum": 1}  # Count flows
+                    }
+                },
+                {
+                    "$sort": {"_id": 1}  # Sort by date
+                }
+            ]
             result = await self.collection.aggregate(pipeline).to_list(None)
             flows_by_date = {doc["_id"]: doc["flowsStarted"] for doc in result}
             total_count = sum(flows_by_date.values())   
@@ -244,13 +275,14 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
             end_time = datetime.now(timezone.utc)
             start_time = end_time - timedelta(seconds=time)
             query = {
-            "CreatedAt": {
-                "$gte": start_time,
-                "$lte": end_time
+                "CreatedAt": {
+                    "$gte": start_time,
+                    "$lte": end_time
+                },
+                "flowName": {"$ne": "latency-test"}  # Filter out latency-test flows
             }
-        }
       
-            flows=await self.get_all_documents(query)
+            flows = await self.get_all_documents(query)
             return flows
         except Exception as e:
             logger.error(f"Error occurred getting flows by timeframe:{e}")

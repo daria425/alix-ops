@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import sync_playwright
 import os, json
 load_dotenv()
 platform_url=os.getenv("PLATFORM_URL")

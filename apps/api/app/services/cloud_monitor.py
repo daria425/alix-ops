@@ -1,11 +1,14 @@
 from google.cloud import monitoring_v3
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
-import os, time
+import os, time, json
+from math import log10, floor
 load_dotenv()
-
-
-MONITORING_PROJECT_ID = os.getenv("MONITORING_PROJECT_ID")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+gcloud_projects_config_file_path=os.path.join(current_dir, "gcloud_projects_config.json")
+with open(gcloud_projects_config_file_path, "r") as f:
+    gcloud_projects_config=json.loads(f.read())
+    MONITORING_PROJECT_ID=gcloud_projects_config[0].get("project_id")
 
 class CloudMonitor:
     def __init__(self):
@@ -110,7 +113,7 @@ class CloudMonitor:
     
     def get_all_errors(self, timeframe:int):
         """Get all errors in the given timeframe"""
-        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error"]
+        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error", "total-error",]
         end_time = time.time()
         start_time = end_time - timeframe
         interval = monitoring_v3.TimeInterval(
@@ -235,16 +238,32 @@ class CloudMonitor:
     
     def calculate_total_uptime(self, timeframe:int):
         """Calculate uptime percentage for the given timeframe"""
-        error_data=self.get_all_errors(timeframe)
-        request_data=self.get_all_requests(timeframe)
-        total_requests=request_data["total_count"]
-        total_errors=error_data["total_count"]
+        error_data = self.get_all_errors(timeframe)
+        request_data = self.get_all_requests(timeframe)
+        total_requests = request_data["total_count"]
+        total_errors = error_data["total_count"]
+        
         if total_requests == 0:
             print("No requests found in the given timeframe, assuming 100% uptime")
             return 100.0
+        
         if total_errors > total_requests:
             total_errors = total_requests
+        
         uptime = (total_requests - total_errors) / total_requests * 100
-        print(f"Uptime: {uptime:.2f}% (Requests: {total_requests}, Errors: {total_errors})")
-        return uptime
+        
+        # Round to 2 significant figures safely
+        if uptime == 0:
+            rounded_uptime = 0.0
+        else:
+            if uptime >= 100:
+                rounded_uptime = 100.0
+            else:
+                # Determine scale based on order of magnitude
+                magnitude = floor(log10(abs(uptime)))
+                scale = 10 ** (magnitude - 1)
+                rounded_uptime = round(uptime / scale) * scale
+        
+        print(f"Uptime: {rounded_uptime:.2f}% (Requests: {total_requests}, Errors: {total_errors})")
+        return rounded_uptime
 

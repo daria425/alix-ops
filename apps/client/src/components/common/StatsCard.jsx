@@ -13,7 +13,10 @@ export default function StatsCard({ title, value, icon }) {
         }}
       >
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="body1" sx={{ mb: 1, mt: 1 }}>
+          <Typography
+            variant="body1"
+            sx={{ mb: 1, mt: 1, color: "text.secondary" }}
+          >
             {title}
           </Typography>
           {icon}

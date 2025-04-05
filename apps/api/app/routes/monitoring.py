@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.services.cloud_monitor import CloudMonitor
-from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService
+from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService, ErrorDatabaseService
 
 router=APIRouter(prefix='/monitoring')
 
@@ -11,7 +11,6 @@ async def get_total_uptime(request: Request, timeframe:int, cloud_monitor: Cloud
         data=cloud_monitor.calculate_total_uptime(timeframe)
         if "X-Cron-Job" in request.headers:
             await db_service.insert_log_entry(data)
-        data.pop("_id", None)
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -52,5 +51,14 @@ async def get_whatsapp_activity(cloud_monitor: CloudMonitor = Depends()):
             "error_timeseries": error_timeseries
         }
         return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/errors")
+async def get_whatsapp_errors(error_db_service: ErrorDatabaseService=Depends()):
+    """Get total WhatsApp errors"""
+    try:
+        errors=await error_db_service.get_all_documents()
+        return errors
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

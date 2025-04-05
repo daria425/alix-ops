@@ -2,6 +2,7 @@ import { Box } from "@mui/material";
 import ServiceMetrics from "./ServiceMetrics";
 import OverviewCards from "./OverviewCards";
 import APIActivity from "./APIActivity";
+import ErrorSummary from "./ErrorSummary";
 export default function MonitorDashboard() {
   //TO-DO: return loading wrapper if !message
 
@@ -12,6 +13,7 @@ export default function MonitorDashboard() {
         <ServiceMetrics />
       </Box>
       <APIActivity />
+      <ErrorSummary />
     </>
   );
 }

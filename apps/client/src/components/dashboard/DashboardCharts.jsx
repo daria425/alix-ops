@@ -1,11 +1,10 @@
 import { SingleLineChart } from "../common/CustomCharts";
 import { MainCardHeading } from "../common/CardContents";
 import { Card, CardContent } from "@mui/material";
-import { mockChartData } from "../../../mockData/mockChartData";
+import { LoadingState, ErrorState } from "../common/FetchStates";
 import { useData } from "../../hooks/useData";
 import useMediaQuery from "@mui/material/useMediaQuery";
 export default function DashboardCharts({ chartProps }) {
-  //eslint-disable-next-line
   const { loading, fetchError, data } = useData(
     "/platform/stats/summary/daily",
     null
@@ -19,26 +18,29 @@ export default function DashboardCharts({ chartProps }) {
         "display": "grid",
         gridTemplateColumns: "1fr 1fr",
       };
-  const finalData =
-    import.meta.env.MODE === "development" ? mockChartData : data;
-  const chartData = finalData?.data || [];
 
   return (
     <Card>
       <CardContent sx={cardLayoutStyle}>
         <MainCardHeading
-          title="WhatsApp Activity"
+          title="WHATSAPP ACTIVITY"
           additionalStyles={!isMobile ? { gridColumn: "span 2" } : {}}
         />
-        {chartData.map((dataset, index) => (
-          <SingleLineChart
-            key={index}
-            chartDataset={dataset}
-            chartProps={chartProps}
-            dataKey="daily_counts"
-            valueFormatType="MMM d"
-          />
-        ))}
+        {loading ? (
+          <LoadingState />
+        ) : fetchError ? (
+          <ErrorState error={fetchError} />
+        ) : (
+          data.data.map((dataset, index) => (
+            <SingleLineChart
+              key={index}
+              chartDataset={dataset}
+              chartProps={chartProps}
+              dataKey="daily_counts"
+              valueFormatType="MMM d"
+            />
+          ))
+        )}
       </CardContent>
     </Card>
   );
