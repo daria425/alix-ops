@@ -14,11 +14,12 @@ const buttons = [
 ];
 
 export default function Dashboard() {
-  const { loading, fetchError, data } = useData("/platform", null);
-
+  let { loading, fetchError, data } = useData("/platform", null);
+  loading = true;
   if (loading) {
     return <LoadingState />;
   }
+
   if (fetchError) {
     return <ErrorState error={fetchError} />;
   }

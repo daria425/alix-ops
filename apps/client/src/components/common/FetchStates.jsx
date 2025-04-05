@@ -1,21 +1,64 @@
-import { Box } from "@mui/material";
-
-function ErrorState({ error, errorBoxConfig = {}, errorComponent = null }) {
+import { Box, Button } from "@mui/material";
+import { red } from "@mui/material/colors";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import LinearProgress from "@mui/material/LinearProgress";
+function ErrorState({ error, errorAlertConfig = {}, errorComponent = null }) {
+  const reloadPage = () => {
+    window.location.reload();
+  };
   if (errorComponent) {
     return errorComponent;
   }
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100%",
-        ...errorBoxConfig,
-      }}
+    <Dialog
+      open={true}
+      onClose={() => {}}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
     >
-      <p>Error: {error?.message || "An unexpected error occurred"}</p>
-    </Box>
+      <DialogContent
+        sx={{
+          bgcolor: red[50],
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "text.primary",
+          ...errorAlertConfig,
+        }}
+      >
+        <ErrorOutlineIcon
+          sx={{
+            color: red[500],
+            fontSize: 50,
+          }}
+        />
+        <DialogTitle
+          id="alert-dialog-title"
+          sx={{
+            color: "inherit",
+            fontWeight: "bold",
+            textAlign: "center",
+          }}
+        >
+          {error?.status ? `Error: ${error.status}` : "Error"}
+        </DialogTitle>
+        <p>
+          {error?.message
+            ? `${error.message}`
+            : "An unexpected error occured, please try again"}
+        </p>
+        <DialogActions>
+          <Button onClick={reloadPage} variant="text" color="inherit">
+            Reload Page
+          </Button>
+        </DialogActions>
+      </DialogContent>
+    </Dialog>
   );
 }
 function LoadingState({ loadingBoxConfig = {}, loadingComponent = null }) {
@@ -25,14 +68,17 @@ function LoadingState({ loadingBoxConfig = {}, loadingComponent = null }) {
   return (
     <Box
       sx={{
+        width: "100%",
+        height: "100%",
+        ...loadingBoxConfig,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "100%",
-        ...loadingBoxConfig,
+        p: 2,
+        boxSizing: "border-box",
       }}
     >
-      <p>Loading...</p>
+      <LinearProgress sx={{ width: "50%" }} />
     </Box>
   );
 }

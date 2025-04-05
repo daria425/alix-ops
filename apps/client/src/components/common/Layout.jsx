@@ -11,7 +11,14 @@ export default function Layout() {
   ];
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box
+      sx={{
+        flexGrow: 1,
+        display: "grid",
+        height: "100vh",
+        gridTemplateRows: "auto 1fr",
+      }}
+    >
       <AppBar position="static">
         <Tabs
           value={currentPage}
