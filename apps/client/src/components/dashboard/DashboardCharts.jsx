@@ -1,16 +1,36 @@
 import { SingleLineChart } from "../common/CustomCharts";
 import { MainCardHeading } from "../common/CardContents";
-import { Card, CardContent } from "@mui/material";
+import { Box, Card, CardContent } from "@mui/material";
 import { LoadingState, ErrorState } from "../common/FetchStates";
+import LinearProgress from "@mui/material/LinearProgress";
 import { useData } from "../../hooks/useData";
 import useMediaQuery from "@mui/material/useMediaQuery";
+
+function ChartsLoading({ height }) {
+  return (
+    <Box
+      sx={{
+        height: height,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <LinearProgress sx={{ width: "50%" }} />
+    </Box>
+  );
+}
 export default function DashboardCharts({ chartProps }) {
-  const { loading, fetchError, data } = useData(
+  let { loading, fetchError, data } = useData(
     "/platform/stats/summary/daily",
     null
   );
+  loading = true;
+  const { height = 300 } = chartProps;
   const isMobile = useMediaQuery("(max-width:768px)");
-  const cardLayoutStyle = isMobile
+  const cardLayoutStyle = loading
+    ? { "display": "block" }
+    : isMobile
     ? {
         "display": "block",
       }
@@ -27,7 +47,7 @@ export default function DashboardCharts({ chartProps }) {
           additionalStyles={!isMobile ? { gridColumn: "span 2" } : {}}
         />
         {loading ? (
-          <LoadingState />
+          <LoadingState loadingComponent={<ChartsLoading height={height} />} />
         ) : fetchError ? (
           <ErrorState error={fetchError} />
         ) : (

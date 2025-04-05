@@ -15,7 +15,6 @@ const buttons = [
 
 export default function Dashboard() {
   let { loading, fetchError, data } = useData("/platform", null);
-  loading = true;
   if (loading) {
     return <LoadingState />;
   }
