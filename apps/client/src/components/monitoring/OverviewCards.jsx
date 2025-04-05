@@ -6,6 +6,7 @@ import {
   CardCaption,
   CardValue,
 } from "../common/CardContents";
+import LinearProgress from "@mui/material/LinearProgress";
 
 const titleMap = {
   "total_errors": "Total Errors",
@@ -40,6 +41,22 @@ const getCaption = (title, value) => {
     return `${value} flows executed in the last 24 hours`;
   }
 };
+
+function OverviewCardLoader({ height }) {
+  return (
+    <Box
+      sx={{
+        height: height,
+        width: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <LinearProgress sx={{ width: "50%" }} />
+    </Box>
+  );
+}
 function OverviewCard({ title, value }) {
   return (
     <Card>
@@ -60,10 +77,10 @@ function OverviewCard({ title, value }) {
     </Card>
   );
 }
-export default function OverviewCards() {
-  const { data, loading, fetchError } = useData("/monitoring/overview", null);
+export default function OverviewCards({ height }) {
+  let { data, loading, fetchError } = useData("/monitoring/overview", null);
   if (loading) {
-    return <LoadingState />;
+    return <OverviewCardLoader height={height} />;
   }
   if (fetchError) {
     return <ErrorState error={fetchError} />;

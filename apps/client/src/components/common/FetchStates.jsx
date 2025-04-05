@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { red } from "@mui/material/colors";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -47,11 +47,11 @@ function ErrorState({ error, errorAlertConfig = {}, errorComponent = null }) {
         >
           {error?.status ? `Error: ${error.status}` : "Error"}
         </DialogTitle>
-        <p>
+        <Typography variant="body1">
           {error?.message
             ? `${error.message}`
             : "An unexpected error occured, please try again"}
-        </p>
+        </Typography>
         <DialogActions>
           <Button onClick={reloadPage} variant="text" color="inherit">
             Reload Page

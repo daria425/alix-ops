@@ -18,7 +18,6 @@ export default function Dashboard() {
   if (loading) {
     return <LoadingState />;
   }
-
   if (fetchError) {
     return <ErrorState error={fetchError} />;
   }

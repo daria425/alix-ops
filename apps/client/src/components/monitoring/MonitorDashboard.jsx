@@ -1,16 +1,16 @@
 import { Box } from "@mui/material";
-import ServiceMetrics from "./ServiceMetrics";
 import OverviewCards from "./OverviewCards";
 import APIActivity from "./APIActivity";
 import ErrorSummary from "./ErrorSummary";
+import WhatsAppLogs from "./WhatsAppLogs";
 export default function MonitorDashboard() {
   //TO-DO: return loading wrapper if !message
 
   return (
     <>
       <Box sx={{ display: "flex", gap: 2 }}>
-        <OverviewCards />
-        <ServiceMetrics />
+        <OverviewCards height={300} />
+        <WhatsAppLogs />
       </Box>
       <APIActivity />
       <ErrorSummary />
