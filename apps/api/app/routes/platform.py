@@ -19,7 +19,7 @@ async def get_platform_data(org_db_service: OrganizationDatabaseService=Depends(
         return {"organizations":organizations, "users":users, "flows":flows}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve platform data: {e}")
-    
+
 @router.get('/stats/messages/daily')
 async def get_daily_message_stats(message_db_service: MessageDatabaseService=Depends()):
     try:

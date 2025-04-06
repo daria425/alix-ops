@@ -113,7 +113,7 @@ class CloudMonitor:
     
     def get_all_errors(self, timeframe:int):
         """Get all errors in the given timeframe"""
-        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error", "total-error",]
+        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error", "total-error"]
         end_time = time.time()
         start_time = end_time - timeframe
         interval = monitoring_v3.TimeInterval(
@@ -194,7 +194,7 @@ class CloudMonitor:
     
     def get_error_timeseries(self, timeframe:int):
         """Get all errors in the given timeframe, and return a dict with timestamp as key and count as value."""
-        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error"]
+        metric_names=["webhook-log-error", "all-llm-error", "all-flow-error", "total-error"]
         end_time = time.time()
         start_time = end_time - timeframe
         interval = monitoring_v3.TimeInterval(

@@ -1,6 +1,10 @@
 from datetime import datetime
 from bson import ObjectId
-
+import os, json
+current_dir = os.path.dirname(os.path.abspath(__file__))
+format_config_file_path=os.path.join(current_dir, "format_config.json")
+with open(format_config_file_path, "r") as f:
+    format_config=json.loads(f.read())
 
 def convert_objectid(doc):
     if isinstance(doc, list):
@@ -19,9 +23,10 @@ def get_db_change_description(collection_name: str, db_change_document: dict) ->
     """Get a human-readable description of the database change."""
     if collection_name == "flow_history":
         flow_name = db_change_document.get("flowName")
-        return f"New {flow_name} flow started"
+        formatted_flow_name=format_config["flowNames"].get(flow_name)
+        return f"New {formatted_flow_name} flow started"
     elif collection_name == "messages":
         if db_change_document.get("Direction") == "outbound":
-            return f"Outbound message sent to {db_change_document.get('To')}"
+            return f"Outbound message sent to {db_change_document.get('To')} from {db_change_document.get('From')}"
         elif db_change_document.get("Direction") == "inbound":
             return f"Inbound message received from {db_change_document.get('From')}"

@@ -59,7 +59,7 @@ function OverviewCardLoader({ height }) {
 }
 function OverviewCard({ title, value }) {
   return (
-    <Card>
+    <Card sx={{ boxSizing: "border-box" }}>
       <CardContent>
         <SummaryCardHeading
           title={titleMap[title]}
@@ -71,7 +71,7 @@ function OverviewCard({ title, value }) {
         />
         <CardCaption
           caption={getCaption(title, value)}
-          additionalStyles={{ mt: 1, mb: 1 }}
+          additionalStyles={{ mt: 1 }}
         />
       </CardContent>
     </Card>
