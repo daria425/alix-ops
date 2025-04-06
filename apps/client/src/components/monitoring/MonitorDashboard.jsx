@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import OverviewCards from "./OverviewCards";
 import APIActivity from "./APIActivity";
 import ErrorSummary from "./ErrorSummary";
-import WhatsAppLogs from "./WhatsAppLogs";
+import WhatsAppStream from "./WhatsAppStream";
 export default function MonitorDashboard() {
   //TO-DO: return loading wrapper if !message
 
@@ -10,7 +10,7 @@ export default function MonitorDashboard() {
     <>
       <Box sx={{ display: "flex", gap: 2 }}>
         <OverviewCards height={300} />
-        <WhatsAppLogs />
+        <WhatsAppStream />
       </Box>
       <APIActivity />
       <ErrorSummary />

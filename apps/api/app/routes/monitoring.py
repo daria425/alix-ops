@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from app.services.cloud_monitor import CloudMonitor
 from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService, ErrorDatabaseService, MessageDatabaseService
 from app.utils.format import get_db_change_description
+from app.utils.logger import logger
 router=APIRouter(prefix='/monitoring')
 
 @router.get("/uptime/total")
@@ -70,9 +71,14 @@ async def get_whatsapp_activity(timeframe:int=86400, flow_history_db_service: Fl
             {**message, "description": get_db_change_description("messages", message)}
             for message in messages["documents"]
         ]
+        logger.info(f"Flows: {flows_with_description}")
+        logger.info(f"Messages: {messages_with_description}")
+        documents=flows_with_description+messages_with_description
+        # Sort documents by timestamp in descending order
+        documents.sort(key=lambda x: x.get("CreatedAt", 0), reverse=True)
         return {
-            "flows":flows_with_description, 
-            "messages":messages_with_description    
+        "documents": documents,
+        "total_count": len(documents),  
         }
 
         

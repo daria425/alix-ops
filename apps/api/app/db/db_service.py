@@ -62,7 +62,8 @@ class BaseDatabaseService:
                     "total_count": total_count,
                     "page": page,
                     "page_size": page_size,
-                    "total_pages": math.ceil(total_count / page_size) if page_size > 0 else 1
+                    "total_pages": math.ceil(total_count / page_size) if page_size > 0 else 1,
+                    "collection":self.collection_name
                 }
             else:
                 # Get all results
@@ -74,12 +75,13 @@ class BaseDatabaseService:
                     "total_count": total_count,
                     "page": 1,
                     "page_size": total_count,
-                    "total_pages": 1
+                    "total_pages": 1,
+                    "collection":self.collection_name
                 }
         
         except Exception as e:
                 logger.error(f"Error occurred getting all collection data: {e}")
-                return {"documents": [], "total_count": 0, "page": page, "page_size": page_size, "total_pages": 0}
+                return {"documents": [], "total_count": 0, "page": page, "page_size": page_size, "total_pages": 0, "collection":self.collection_name}
 
 class AlixOpsDatabaseService(BaseDatabaseService):
     """Base class for collections in the Alix Ops database."""

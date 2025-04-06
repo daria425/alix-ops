@@ -105,8 +105,8 @@ class WebsocketManager:
                                 {
                                     "operation_type":"insert", 
                                     "collection": collection_name,
-                                    "data": convert_objectid(change["fullDocument"]),
-                                }
+                                    "document": convert_objectid(change["fullDocument"]),
+                                } # idk try this for now??
                             )
                         except WebSocketDisconnect:
                             disconnected_clients.append(client)
