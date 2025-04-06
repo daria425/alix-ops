@@ -31,7 +31,7 @@ export default function ErrorSummary() {
   return (
     <Card>
       <CardContent>
-        <MainCardHeading title="Errors" />
+        <MainCardHeading title="ERRORS" />
         {loading ? (
           <LoadingState />
         ) : fetchError ? (

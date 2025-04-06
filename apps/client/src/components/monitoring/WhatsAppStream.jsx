@@ -62,6 +62,26 @@ function WhatsAppStreamItem({ doc }) {
   );
 }
 
+function WhatsAppStreamContent({ combinedData }) {
+  if (combinedData.length === 0) {
+    return (
+      <Box
+        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+      >
+        <Typography variant="body2">No activity in the last 2 hours</Typography>
+      </Box>
+    );
+  } else {
+    return (
+      <List sx={{ overflowY: "auto", flexGrow: 1 }}>
+        {combinedData.map((doc, index) => (
+          <WhatsAppStreamItem key={index} doc={doc} />
+        ))}
+      </List>
+    );
+  }
+}
+
 export default function WhatsAppStream({ maxHeight }) {
   const {
     data: prevDbChangeData,
@@ -111,11 +131,7 @@ export default function WhatsAppStream({ maxHeight }) {
             }
           />
         ) : (
-          <List sx={{ overflowY: "auto" }}>
-            {combinedData.map((doc, index) => (
-              <WhatsAppStreamItem key={index} doc={doc} />
-            ))}
-          </List>
+          <WhatsAppStreamContent combinedData={combinedData} />
         )}
       </CardContent>
     </Card>

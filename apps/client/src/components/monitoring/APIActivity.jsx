@@ -4,7 +4,37 @@ import { MainCardHeading } from "../common/CardContents";
 import { LoadingState, ErrorState } from "../common/FetchStates";
 import { useData } from "../../hooks/useData";
 import { red, cyan, grey } from "@mui/material/colors";
-
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+function APIActivityFetchError({ error, height, refetch }) {
+  return (
+    <Box
+      sx={{
+        height: height,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "text.primary",
+        gap: 2,
+        bgcolor: red[50],
+      }}
+    >
+      <ErrorOutlineIcon
+        sx={{
+          color: red[500],
+          fontSize: 25,
+        }}
+      />
+      <Typography variant="h6">Error: {error?.status || null}</Typography>
+      <Typography variant="body1">
+        {error?.message || "An error occurred loading data"}
+      </Typography>
+      <Button variant="text" onClick={refetch} color="inherit">
+        TRY AGAIN
+      </Button>
+    </Box>
+  );
+}
 function ActivityLegend({ legendData }) {
   return (
     <Box
@@ -45,10 +75,11 @@ function APIActivityChart({
   requestValues,
   errorValues,
   chartColors,
+  height,
 }) {
   return (
     <LineChart
-      height={300}
+      height={height}
       xAxis={[
         {
           data: dateLabels,
@@ -91,10 +122,11 @@ function APIActivityChart({
 }
 
 export default function APIActivity() {
-  const { data, loading, fetchError } = useData(
+  const { data, loading, fetchError, refetch } = useData(
     "/monitoring/api/activity",
     null
   );
+  const height = 300;
   const { request_timeseries = {}, error_timeseries = {} } = data || {};
   const dateLabels = Object.keys(request_timeseries).map((date) => {
     const [year, month, day] = date.split("-");
@@ -119,9 +151,17 @@ export default function APIActivity() {
       <CardContent>
         <MainCardHeading title="API ACTIVITY" />
         {loading ? (
-          <LoadingState />
+          <LoadingState loadingBoxConfig={{ height: height }} />
         ) : fetchError ? (
-          <ErrorState error={fetchError} />
+          <ErrorState
+            errorComponent={
+              <APIActivityFetchError
+                height={height}
+                error={fetchError}
+                refetch={refetch}
+              />
+            }
+          />
         ) : (
           <>
             <ActivityLegend
@@ -141,6 +181,7 @@ export default function APIActivity() {
               ]}
             />
             <APIActivityChart
+              height={height}
               dateLabels={dateLabels}
               requestValues={requestValues}
               errorValues={errorValues}

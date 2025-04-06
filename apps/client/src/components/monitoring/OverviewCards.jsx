@@ -63,12 +63,14 @@ function OverviewCard({ title, value }) {
       <CardContent
         sx={{
           display: "grid",
-          gridTemplateRows: "auto 1fr",
+          gridTemplateRows: "1fr auto",
+          boxSizing: "border-box",
+          height: "100%",
         }}
       >
         <SummaryCardHeading
           title={titleMap[title]}
-          additionalStyles={{ textWrap: "nowrap", mt: 1, mb: 1 }}
+          additionalStyles={{ textWrap: "nowrap", mt: 3 }}
         />
         <Box
           sx={{
@@ -77,11 +79,11 @@ function OverviewCard({ title, value }) {
         >
           <CardValue
             value={addUnits(title, value)}
-            additionalStyles={{ mt: 2, mb: 2 }}
+            additionalStyles={{ mb: 2 }}
           />
           <CardCaption
             caption={getCaption(title, value)}
-            additionalStyles={{ mt: 1 }}
+            additionalStyles={{ mt: 2, mb: 3 }}
           />
         </Box>
       </CardContent>
