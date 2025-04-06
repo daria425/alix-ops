@@ -4,19 +4,8 @@ from app.utils.dates import fill_dates
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta, timezone
 from pymongo import ReturnDocument
+from app.utils.format import convert_objectid
 import math
-
-def convert_objectid(doc):
-    if isinstance(doc, list):
-        return [convert_objectid(d) for d in doc]
-    elif isinstance(doc, dict):
-        return {k: convert_objectid(v) for k, v in doc.items()}
-    elif isinstance(doc, ObjectId):
-        return str(doc)
-    elif isinstance(doc, datetime):
-        return doc.isoformat()
-    else:
-        return doc
     
 class BaseDatabaseService:
     """Base class to manage MongoDB collections for different databases."""
@@ -31,6 +20,29 @@ class BaseDatabaseService:
         if self.db_connection.db is None:
             raise RuntimeError("Database connection is not initialized. Call `connect()` first.")
         self.collection = self.db_connection.db[self.collection_name]
+
+    async def get_documents_by_timeframe(self, time:int):
+        """Get all documents created in the given timeframe
+        Args:
+            time (int): Timeframe in seconds
+        """
+        await self.init_collection()
+        try:
+            end_time = datetime.now(timezone.utc)
+            start_time = end_time - timedelta(seconds=time)
+            query = {
+                "CreatedAt": {
+                    "$gte": start_time,
+                    "$lte": end_time
+                }
+            }
+            documents = await self.get_all_documents(query)
+            return documents
+        except Exception as e:
+            logger.error(f"Error occurred getting documents by timeframe:{e}")
+    
+            
+            
 
     async def get_all_documents(self, filters=None, use_pagination=False, page=1, page_size=10):
         await self.init_collection()

@@ -91,7 +91,10 @@ function APIActivityChart({
 }
 
 export default function APIActivity() {
-  const { data, loading, fetchError } = useData("/monitoring/activity", null);
+  const { data, loading, fetchError } = useData(
+    "/monitoring/api/activity",
+    null
+  );
   const { request_timeseries = {}, error_timeseries = {} } = data || {};
   const dateLabels = Object.keys(request_timeseries).map((date) => {
     const [year, month, day] = date.split("-");

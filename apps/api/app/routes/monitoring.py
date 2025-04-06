@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.services.cloud_monitor import CloudMonitor
-from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService, ErrorDatabaseService
-
+from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService, ErrorDatabaseService, MessageDatabaseService
+from app.utils.format import get_db_change_description
 router=APIRouter(prefix='/monitoring')
 
 @router.get("/uptime/total")
@@ -40,9 +40,9 @@ async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/activity")
-async def get_whatsapp_activity(cloud_monitor: CloudMonitor = Depends()):
-    """Get total WhatsApp activity"""
+@router.get("/api/activity")
+async def get_api_activity(cloud_monitor: CloudMonitor = Depends()):
+    """Get total WhatsApp API activity"""
     try:
         request_timeseries=cloud_monitor.get_request_timeseries(604800)
         error_timeseries=cloud_monitor.get_error_timeseries(604800)
@@ -53,8 +53,33 @@ async def get_whatsapp_activity(cloud_monitor: CloudMonitor = Depends()):
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-@router.get("/errors")
+
+@router.get("/whatsapp/activity")
+async def get_whatsapp_activity(timeframe:int=86400, flow_history_db_service: FlowHistoryDatabaseService=Depends(), message_db_service: MessageDatabaseService=Depends()):
+    """Get total WhatsApp activity"""
+    try:
+        flows=await flow_history_db_service.get_flows_by_timeframe(timeframe)
+        messages=await message_db_service.get_documents_by_timeframe(timeframe)
+        flows_with_description = [
+            {**flow, "description": get_db_change_description("flow_history", flow)}
+            for flow in flows["documents"]
+        ]
+        
+        # Add description to each message document
+        messages_with_description = [
+            {**message, "description": get_db_change_description("messages", message)}
+            for message in messages["documents"]
+        ]
+        return {
+            "flows":flows_with_description, 
+            "messages":messages_with_description    
+        }
+
+        
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/whatsapp/errors")
 async def get_whatsapp_errors(error_db_service: ErrorDatabaseService=Depends()):
     """Get total WhatsApp errors"""
     try:

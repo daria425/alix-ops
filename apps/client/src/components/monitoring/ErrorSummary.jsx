@@ -23,7 +23,10 @@ function ErrorTable({ errorDocuments }) {
 }
 
 export default function ErrorSummary() {
-  const { data, loading, fetchError } = useData("/monitoring/errors", null); //eslint-disable-line
+  const { data, loading, fetchError } = useData(
+    "/monitoring/whatsapp/errors",
+    null
+  ); //eslint-disable-line
   const { documents = [], total_count = 0 } = data || {};
   return (
     <Card>
