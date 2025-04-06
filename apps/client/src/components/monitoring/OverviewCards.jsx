@@ -59,20 +59,31 @@ function OverviewCardLoader({ height }) {
 }
 function OverviewCard({ title, value }) {
   return (
-    <Card sx={{ boxSizing: "border-box" }}>
-      <CardContent>
+    <Card>
+      <CardContent
+        sx={{
+          display: "grid",
+          gridTemplateRows: "auto 1fr",
+        }}
+      >
         <SummaryCardHeading
           title={titleMap[title]}
           additionalStyles={{ textWrap: "nowrap", mt: 1, mb: 1 }}
         />
-        <CardValue
-          value={addUnits(title, value)}
-          additionalStyles={{ mt: 2, mb: 2 }}
-        />
-        <CardCaption
-          caption={getCaption(title, value)}
-          additionalStyles={{ mt: 1 }}
-        />
+        <Box
+          sx={{
+            alignSelf: "end",
+          }}
+        >
+          <CardValue
+            value={addUnits(title, value)}
+            additionalStyles={{ mt: 2, mb: 2 }}
+          />
+          <CardCaption
+            caption={getCaption(title, value)}
+            additionalStyles={{ mt: 1 }}
+          />
+        </Box>
       </CardContent>
     </Card>
   );

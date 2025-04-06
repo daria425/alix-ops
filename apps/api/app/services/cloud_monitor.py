@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
 import os, time, json
 from math import log10, floor
+from collections import defaultdict
 load_dotenv()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 gcloud_projects_config_file_path=os.path.join(current_dir, "gcloud_projects_config.json")
@@ -83,6 +84,7 @@ class CloudMonitor:
         )
         metric_log_count=[]
         total_count=0
+        seen_requests=defaultdict(set)
         for metric_name in metric_names:
             filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
 
@@ -95,7 +97,14 @@ class CloudMonitor:
                         "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
                     }
                 )
-                metric_count = sum(point.value.int64_value for result in results for point in result.points)
+                metric_count = 0
+                for result in results:
+                    for point in result.points:
+                        timestamp=point.interval.start_time.timestamp()
+                        if timestamp in seen_requests[metric_name]:
+                            continue
+                        seen_requests[metric_name].add(timestamp)
+                        metric_count+=point.value.int64_value
                 item={
                     "name": metric_name,
                     "count": metric_count
@@ -121,6 +130,7 @@ class CloudMonitor:
         )
         total_count=0
         metric_log_count=[]
+        seen_errors=set()
         for metric_name in metric_names:
             filter_str = f'metric.type="logging.googleapis.com/user/{metric_name}"'
 
@@ -133,13 +143,22 @@ class CloudMonitor:
                         "view": monitoring_v3.ListTimeSeriesRequest.TimeSeriesView.FULL,
                     }
                 )
-                metric_count = sum(point.value.int64_value for result in results for point in result.points)
+                metric_count = 0
+                for result in results:
+                    for point in result.points:
+                        timestamp=point.interval.start_time.timestamp()
+                        if timestamp in seen_errors:
+                            continue
+                        seen_errors.add(timestamp)
+                        metric_count+=point.value.int64_value
                 item={
                     "name": metric_name,
                     "count": metric_count
                 }
+
                 metric_log_count.append(item)
                 total_count+=metric_count
+                print(metric_name, metric_log_count)
             except Exception as e:
                 print(f"Error fetching error count: {e}")
                 return 0
@@ -201,6 +220,7 @@ class CloudMonitor:
             {"start_time": {"seconds": int(start_time)}, "end_time": {"seconds": int(end_time)}}
         )
         request_data = {}
+        seen_errors=set()
         current_date = datetime.fromtimestamp(start_time, timezone.utc).date()
         end_date = datetime.fromtimestamp(end_time, timezone.utc).date()
         while current_date <= end_date:
@@ -225,9 +245,13 @@ class CloudMonitor:
                 for result in results:
                     for point in result.points:
                         timestamp = datetime.fromtimestamp(point.interval.start_time.timestamp(), timezone.utc)
+                        if timestamp in seen_errors:
+                            continue
+                        seen_errors.add(timestamp)
                         date_key = timestamp.date().isoformat()
                         count = point.value.int64_value
                         request_data[date_key]["metrics"][metric_name] += count
+
                         request_data[date_key]["total_count"] += count
 
             except Exception as e:
