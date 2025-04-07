@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.services.cloud_monitor import CloudMonitor
 from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService, ErrorDatabaseService, MessageDatabaseService
+from app.core.internal_service_monitor import InternalServiceMonitor
 from app.utils.format import get_db_change_description
 from app.utils.logger import logger
 router=APIRouter(prefix='/monitoring')
@@ -13,6 +14,15 @@ async def get_total_uptime(request: Request, timeframe:int, cloud_monitor: Cloud
         if "X-Cron-Job" in request.headers:
             await db_service.insert_log_entry(data)
         return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/latency")
+async def test_latency(internal_service_monitor: InternalServiceMonitor = Depends()):
+    """Test latency of WhatsApp Message (Twilio API)"""
+    try:
+        response=internal_service_monitor.run_latency_test()
+        return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

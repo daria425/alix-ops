@@ -4,8 +4,9 @@ from app.utils.logger import logger
 import requests, time
 
 INTERNAL_SERVICE_MONITORING_URL_LIST=["https://webhook-dot-ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://ai-api-dot-ai-signposting.nw.r.appspot.com/", "https://whatsapp-control-room.ew.r.appspot.com/"]
+
 class InternalServiceMonitor:
-    def __init__(self):
+    def __init__(self, test_phone_number:str=None):
         self.service_url_list=INTERNAL_SERVICE_MONITORING_URL_LIST
         self.latency_check_request_body={
     "SmsMessageSid": "",
@@ -16,7 +17,7 @@ class InternalServiceMonitor:
     "WaId": "38269372208",
     "SmsStatus": "received",
     "Body": "latency",
-    "To": "whatsapp:+447462582640",
+    "To": f"whatsapp:+{test_phone_number}" if test_phone_number else f"whatsapp:+447462582640",
     "MessagingServiceSid": "",
     "NumSegments": "1",
     "ReferralNumMedia": "0",
@@ -121,7 +122,8 @@ class InternalServiceMonitor:
             response = requests.post(
                 "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
                 json=self.latency_check_request_body,
-                timeout=20
+                headers={"Content-Type": "application/json"},
+                timeout=30
             )
             response_time = round(time.time() - start_time, 2)
             response.raise_for_status()
@@ -176,9 +178,6 @@ class InternalServiceMonitor:
                 "url": "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
                 "data": None,
             }
-
-
-    
     async def log_internal_service_status(self, logs_db_service: HealthCheckLogsDatabaseService):
         service_url_responses=self._ping_services(self.service_url_list)
         await logs_db_service.insert_log_entry(service_url_responses)
