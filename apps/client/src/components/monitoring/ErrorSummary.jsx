@@ -6,20 +6,28 @@ import { LoadingState, ErrorState } from "../common/FetchStates";
 import { useData } from "../../hooks/useData";
 function ErrorTable({ errorDocuments }) {
   const tableData = {
-    headers: ["Error", "Date", "Time", "Service", "Environment"],
-    rows: errorDocuments.map(({ error, timestamp, service, environment }) => {
-      // Parse the ISO timestamp
-      const date = parseISO(timestamp);
+    headers: ["Message", "Date", "Time", "Service", "Path", "Environment"],
+    rows: errorDocuments.map(
+      ({ error, timestamp, service, path, environment }) => {
+        // Parse the ISO timestamp
+        const date = parseISO(timestamp);
 
-      // Format the date and time separately
-      const formattedDate = format(date, "yyyy-MM-dd");
-      const formattedTime = format(date, "HH:mm:ss");
+        // Format the date and time separately
+        const formattedDate = format(date, "yyyy-MM-dd");
+        const formattedTime = format(date, "HH:mm:ss");
 
-      return [error, formattedDate, formattedTime, service, environment];
-    }),
+        return [
+          error,
+          formattedDate,
+          formattedTime,
+          service,
+          path,
+          environment,
+        ];
+      }
+    ),
   };
-  const isLoading = tableData.rows.length === 0;
-  return <CustomTable tableData={tableData} loading={isLoading} />;
+  return <CustomTable tableData={tableData} loading={false} />;
 }
 
 export default function ErrorSummary() {

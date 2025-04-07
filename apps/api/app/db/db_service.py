@@ -44,7 +44,7 @@ class BaseDatabaseService:
             
             
 
-    async def get_all_documents(self, filters=None, use_pagination=False, page=1, page_size=10):
+    async def get_all_documents(self, filters:dict=None, sort_config:dict=None, use_pagination:bool=False, page:int=1, page_size:int=10):
         await self.init_collection()
         try:
             query = filters or {}
@@ -56,7 +56,8 @@ class BaseDatabaseService:
                 # Get paginated results
                 cursor = self.collection.find(query).skip(skip).limit(page_size)
                 documents = convert_objectid(await cursor.to_list(None))
-                
+                if sort_config:
+                    documents = sorted(documents, key=lambda x: x.get(sort_config["field"]), reverse=sort_config["reverse"])
                 return {
                     "documents": documents,
                     "total_count": total_count,
@@ -69,7 +70,8 @@ class BaseDatabaseService:
                 # Get all results
                 cursor = self.collection.find(query)
                 documents = convert_objectid(await cursor.to_list(None))
-                
+                if sort_config:
+                    documents = sorted(documents, key=lambda x: x.get(sort_config["field"]), reverse=sort_config["reverse"])
                 return {
                     "documents": documents,
                     "total_count": total_count,

@@ -107,7 +107,11 @@ async def get_whatsapp_activity(timeframe:int=86400, flow_history_db_service: Fl
 async def get_whatsapp_errors(error_db_service: ErrorDatabaseService=Depends()):
     """Get total WhatsApp errors"""
     try:
-        errors=await error_db_service.get_all_documents()
+        sort_config={
+            "field":"timestamp", 
+            "reverse":True
+        }
+        errors=await error_db_service.get_all_documents(sort_config=sort_config)
         return errors
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

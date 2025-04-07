@@ -4,7 +4,8 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-
+import TablePagination from "@mui/material/TablePagination";
+import { useState } from "react";
 export default function CustomTable({
   tableData,
   tableStyle = {},
@@ -15,6 +16,15 @@ export default function CustomTable({
   loading = false,
 }) {
   const { headers, rows } = tableData;
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 5;
+  const [visibleRows, setVisibleRows] = useState(rows.slice(0, rowsPerPage));
+  const handleChangePage = () => {
+    setPage(page + 1);
+    const startRow = page * rowsPerPage;
+    const endRow = startRow + rowsPerPage;
+    setVisibleRows(rows.slice(startRow, endRow));
+  };
   if (loading) {
     return (
       <TableContainer sx={containerStyle}>
@@ -40,29 +50,39 @@ export default function CustomTable({
     );
   }
   return (
-    <TableContainer sx={containerStyle}>
-      <Table sx={tableStyle}>
-        <TableHead>
-          <TableRow sx={headerStyle}>
-            {headers.map((header, index) => (
-              <TableCell key={index} sx={cellStyle}>
-                {header}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row, rowIndex) => (
-            <TableRow key={rowIndex} sx={rowStyle}>
-              {row.map((cell, cellIndex) => (
-                <TableCell key={cellIndex} sx={cellStyle}>
-                  {cell}
+    <>
+      <TableContainer sx={containerStyle}>
+        <Table sx={tableStyle}>
+          <TableHead>
+            <TableRow sx={headerStyle}>
+              {headers.map((header, index) => (
+                <TableCell key={index} sx={cellStyle}>
+                  {header}
                 </TableCell>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {visibleRows.map((row, rowIndex) => (
+              <TableRow key={rowIndex} sx={rowStyle}>
+                {row.map((cell, cellIndex) => (
+                  <TableCell key={cellIndex} sx={cellStyle}>
+                    {cell}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        component="div"
+        count={rows.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPageOptions={-1}
+      />
+    </>
   );
 }
