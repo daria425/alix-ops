@@ -335,6 +335,62 @@ class ErrorDatabaseService(AlixOpsDatabaseService):
         except Exception as e:
             logger.error(f"Error occurred inserting error:{e}")
 
+class LatencyTestLogDatabaseService(AlixOpsDatabaseService):
+    def __init__(self):
+        super().__init__("latency_test_logs")
+    async def insert_log_entry(self, log_entry:dict):
+        await self.init_collection()
+        try:
+            inserted_doc=await self.collection.insert_one(log_entry)
+            logger.info(f"Successfully inserted log entry {inserted_doc.inserted_id}")
+        except Exception as e:
+            logger.error(f"Error occurred inserting log entry:{e}")
+
+    async def calculate_average_latency(self, timeframe:int):
+        await self.init_collection()
+        try:
+            end_time = datetime.now(timezone.utc)
+            start_time = end_time - timedelta(seconds=timeframe)
+            start_ts = int(start_time.timestamp() * 1000)
+            end_ts = int(end_time.timestamp() * 1000)
+            pipeline = [
+                {
+                    "$match": {
+                        "data.timestamp": {
+                            "$gte": start_ts,
+                            "$lte": end_ts
+                        }
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": None,
+                        "average_latency": {"$avg": "$response_time"}
+                    }
+                }
+            ]
+            result = await self.collection.aggregate(pipeline).to_list(None)
+            if result and "average_latency" in result[0]:
+                return result[0]["average_latency"]
+            else:
+                fallback_pipeline=[
+                    {
+                        "$group":{
+                            "_id": None,
+                            "average_latency": {"$avg": "$response_time"}
+                        }
+                    }
+                ]
+                results=await self.collection.aggregate(fallback_pipeline).to_list(None)
+                if results and "average_latency" in results[0]:
+                    return results[0]["average_latency"]
+                else:
+                    logger.warning("No latency data found")
+                    return 0
+                
+        except Exception as e:
+            logger.error(f"Error occurred calculating average latency:{e}")
+
     
 
 

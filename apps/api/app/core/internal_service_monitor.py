@@ -4,10 +4,11 @@ from app.utils.logger import logger
 import requests, time
 
 INTERNAL_SERVICE_MONITORING_URL_LIST=["https://webhook-dot-ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://ai-api-dot-ai-signposting.nw.r.appspot.com/", "https://whatsapp-control-room.ew.r.appspot.com/"]
-
+WHATSAPP_SERVICE_URLS=["https://webhook-dot-ai-signposting.nw.r.appspot.com/", "https://ai-signposting.nw.r.appspot.com/", "https://ai-api-dot-ai-signposting.nw.r.appspot.com/"]
 class InternalServiceMonitor:
     def __init__(self, test_phone_number:str=None):
         self.service_url_list=INTERNAL_SERVICE_MONITORING_URL_LIST
+        self.whatsapp_service_url_list=WHATSAPP_SERVICE_URLS
         self.latency_check_request_body={
     "SmsMessageSid": "",
     "NumMedia": "0",
@@ -117,18 +118,34 @@ class InternalServiceMonitor:
         service_url_responses['completed_at']=time.time()
         return service_url_responses
     def run_latency_test(self):
-        start_time = time.time()
+        
         try:
+            ping_statuses=[]
+            for service_url in self.whatsapp_service_url_list:
+                ping_status=requests.get(f"{service_url}health", timeout=30)
+                ping_status.raise_for_status()
+                ping_statuses.append(ping_status.status_code)
+            if any(status != 200 for status in ping_statuses):
+                return{
+                    "message": "One or more WhatsApp services are down, cannot proceed with latency test",
+                    "status_code": 503,
+                    "response_time": None,
+                    "error": True,
+                    "data": None,
+                }
+            logger.info("WhatsApp Services are up, proceeding with latency test...")
+            time.sleep(3)  # Wait for 3 seconds before sending the latency test request
+            start_time = time.time()
             response = requests.post(
                 "https://webhook-dot-ai-signposting.nw.r.appspot.com/webhook",
                 json=self.latency_check_request_body,
                 headers={"Content-Type": "application/json"},
                 timeout=30
             )
-            response_time = round(time.time() - start_time, 2)
+            response_time = round((time.time() - start_time) * 1000, 2)  # Convert to ms and round
             response.raise_for_status()
             status_code = response.status_code
-            message = f"Latency test completed successfully with response time of {response_time} seconds"
+            message = f"Latency test completed successfully with response time of {response_time} milliseconds"
             response_data = response.json()
             return {
                 "message": message,
@@ -139,7 +156,7 @@ class InternalServiceMonitor:
                 "data": response_data,
             }
         except requests.exceptions.Timeout:
-            response_time = round(time.time() - start_time, 2)
+            response_time = round((time.time() - start_time) * 1000, 2)  # Convert to ms
             return {
                 "message": "Timeout error during latency test (took too long to respond)",
                 "status_code": 408,
@@ -149,7 +166,7 @@ class InternalServiceMonitor:
                 "data": None,
             }
         except requests.exceptions.ConnectionError:
-            response_time = round(time.time() - start_time, 2)
+            response_time = round((time.time() - start_time) * 1000, 2)  # Convert to ms
             return {
                 "message": "Connection error during latency test (service may be down)",
                 "status_code": 503,
@@ -159,7 +176,7 @@ class InternalServiceMonitor:
                 "data": None,
             }
         except requests.exceptions.HTTPError as e:
-            response_time = round(time.time() - start_time, 2)
+            response_time = round((time.time() - start_time) * 1000, 2)  # Convert to ms
             return {
                 "message": f"HTTP error during latency test: {e}",
                 "status_code": response.status_code if 'response' in locals() else 500,
@@ -169,7 +186,7 @@ class InternalServiceMonitor:
                 "data": None,
             }
         except Exception as e:
-            response_time = round(time.time() - start_time, 2)
+            response_time = round((time.time() - start_time) * 1000, 2)  # Convert to ms
             return {
                 "message": f"Unexpected error during latency test: {e}",
                 "status_code": 500,

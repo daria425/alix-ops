@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.services.cloud_monitor import CloudMonitor
-from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService, ErrorDatabaseService, MessageDatabaseService
+from app.db.db_service import UptimeLogsDatabaseService, FlowHistoryDatabaseService, ErrorDatabaseService, MessageDatabaseService, LatencyTestLogDatabaseService
 from app.core.internal_service_monitor import InternalServiceMonitor
 from app.utils.format import get_db_change_description
 from app.utils.logger import logger
@@ -17,17 +17,24 @@ async def get_total_uptime(request: Request, timeframe:int, cloud_monitor: Cloud
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/latency")
-async def test_latency(internal_service_monitor: InternalServiceMonitor = Depends()):
+@router.post("/latency", status_code=201)
+async def test_latency(internal_service_monitor: InternalServiceMonitor = Depends(), latency_logs_db_service: LatencyTestLogDatabaseService = Depends()) :
     """Test latency of WhatsApp Message (Twilio API)"""
     try:
         response=internal_service_monitor.run_latency_test()
-        return response
+        await latency_logs_db_service.insert_log_entry(response)
+        if response["error"]:
+            message=f"Latency test failed with error {response['status_code']}"
+        else:
+            message=f"Latency test successful with response code {response['status_code']}"
+        return {
+            "message": message,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/overview")
-async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_history_db_service: FlowHistoryDatabaseService = Depends()):
+async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_history_db_service: FlowHistoryDatabaseService = Depends(), latency_logs_db_service: LatencyTestLogDatabaseService = Depends()):
     """
     Returns an overview of monitoring metrics including:
     - Total Errors (24h)
@@ -35,15 +42,16 @@ async def get_monitoring_overview(cloud_monitor: CloudMonitor = Depends(), flow_
     - Avg Latency (ms)
     - Active Flows
     """
-    MOCK_LATENCY_VALUE=200
+    TIMEFRAME=86400  # 24 hours in seconds
     try:
-        total_errors=cloud_monitor.get_all_errors(86400)
-        total_uptime=cloud_monitor.calculate_total_uptime(86400)
-        flows_executed=await flow_history_db_service.get_flows_by_timeframe(86400)
+        total_errors=cloud_monitor.get_all_errors(TIMEFRAME)
+        total_uptime=cloud_monitor.calculate_total_uptime(TIMEFRAME)
+        flows_executed=await flow_history_db_service.get_flows_by_timeframe(TIMEFRAME)
+        average_latency=await latency_logs_db_service.calculate_average_latency(TIMEFRAME)
         data= {
             "total_errors": total_errors.get("total_count", 0),
             "total_uptime": total_uptime, 
-            "average_latency": MOCK_LATENCY_VALUE,
+            "average_latency": average_latency,
             "flows_executed": flows_executed.get("total_count", 0)
         }
 
