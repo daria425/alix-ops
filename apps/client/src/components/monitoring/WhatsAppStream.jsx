@@ -3,6 +3,7 @@ import { useData } from "../../hooks/useData";
 import { useState, useEffect } from "react";
 import { Box, Typography, Card, CardContent, Button } from "@mui/material";
 import { MainCardHeading } from "../common/CardContents";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -54,10 +55,17 @@ function StreamError({ error, refetch }) {
 }
 function WhatsAppStreamItem({ doc }) {
   const { description } = doc;
+  const isMobile = useMediaQuery("(max-width:768px)");
+  const getDescription = (isMobile) => {
+    if (isMobile && description.length > 30) {
+      return description.slice(0, 30) + "...";
+    }
+    return description;
+  };
   return (
     <ListItem>
       <ListItemIcon>{getIcon(doc)}</ListItemIcon>
-      <Typography variant="body2">{description}</Typography>
+      <Typography variant="body2">{getDescription(isMobile)}</Typography>
     </ListItem>
   );
 }

@@ -6,23 +6,48 @@ import { LoadingState, ErrorState } from "../common/FetchStates";
 import { useData } from "../../hooks/useData";
 function ErrorTable({ errorDocuments }) {
   const tableData = {
-    headers: ["Message", "Date", "Time", "Service", "Path", "Environment"],
+    headers: [
+      "Message",
+      "Date",
+      "Time",
+      "Contact",
+      "Service",
+      "Path",
+      "Environment",
+      "Message Text",
+      "From",
+      "To",
+      "Direction",
+    ],
     rows: errorDocuments.map(
-      ({ error, timestamp, service, path, environment }) => {
+      ({ error, timestamp, service, path, environment, failedMessage }) => {
         // Parse the ISO timestamp
         const date = parseISO(timestamp);
 
         // Format the date and time separately
         const formattedDate = format(date, "yyyy-MM-dd");
         const formattedTime = format(date, "HH:mm:ss");
+        const {
+          Body = "",
+          From = "",
+          To = "",
+          Direction = "",
+          ProfileName = "",
+        } = failedMessage;
 
         return [
           error,
           formattedDate,
           formattedTime,
+          ProfileName,
           service,
+
           path,
           environment,
+          Body,
+          From,
+          To,
+          Direction,
         ];
       }
     ),

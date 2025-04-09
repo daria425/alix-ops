@@ -385,7 +385,8 @@ class LatencyTestLogDatabaseService(AlixOpsDatabaseService):
                 ]
                 results=await self.collection.aggregate(fallback_pipeline).to_list(None)
                 if results and "average_latency" in results[0]:
-                    return results[0]["average_latency"]
+                    rounded_latency = round(results[0]["average_latency"])
+                    return rounded_latency
                 else:
                     logger.warning("No latency data found")
                     return 0
