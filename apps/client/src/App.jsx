@@ -1,6 +1,10 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { AuthProvider } from "./services/AuthProvider";
 import { createTheme, ThemeProvider } from "@mui/material";
+import {
+  ApplicationError,
+  AuthenticationError,
+} from "./components/common/ErrorElements";
 import Index from "./components/common/Index";
 import LoginForm from "./components/auth/LoginForm";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -23,14 +27,21 @@ function App() {
     {
       path: "/",
       element: <Index />,
+      errorElement: <ApplicationError />,
     },
     {
       path: "/login",
       element: <LoginForm />,
     },
     {
+      path: "/403",
+      element: <AuthenticationError />,
+      errorElement: <ApplicationError />,
+    },
+    {
       path: "/app",
       element: <ProtectedRoute />,
+      errorElement: <ApplicationError />,
       children: [
         {
           path: "",
