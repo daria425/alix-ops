@@ -19,7 +19,7 @@ db_websocket_manager=WebsocketManager()
 
 app = FastAPI(lifespan=lifespan)
 
-origins = ["http://localhost:5173"]
+origins = ["http://localhost:5173", "https://alix-ops.web.app"]
 
 app.add_middleware(
     CORSMiddleware,

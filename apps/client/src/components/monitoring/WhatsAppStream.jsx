@@ -1,4 +1,5 @@
 import { useWebSocket } from "../../hooks/useWebSocket";
+import { websocket_url } from "../../config/api.config";
 import { useData } from "../../hooks/useData";
 import { useState, useEffect } from "react";
 import { Box, Typography, Card, CardContent, Button } from "@mui/material";
@@ -97,9 +98,7 @@ export default function WhatsAppStream({ maxHeight }) {
     fetchError,
     refetch,
   } = useData("/monitoring/whatsapp/activity", "timeframe=7200");
-  const { message: changeStreamMessage } = useWebSocket(
-    "ws://127.0.0.1:8000/db-stream/ws"
-  );
+  const { message: changeStreamMessage } = useWebSocket(websocket_url);
 
   const [combinedData, setCombinedData] = useState([]);
   useEffect(() => {

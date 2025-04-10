@@ -1,3 +1,12 @@
-node_modules
+node_modules/
 .env
 mock_responses.json
+# Build output
+dist/
+
+# Firebase cache and emulators
+.firebase/
+.firebaserc
+
+# Logs
+npm-debug.log*
