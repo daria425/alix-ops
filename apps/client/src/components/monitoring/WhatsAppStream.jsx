@@ -11,10 +11,11 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import CallMadeIcon from "@mui/icons-material/CallMade";
 import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
+import { formatFriendlyTimestamp } from "../../utils/dateUtils";
 import { LoadingState, ErrorState } from "../common/FetchStates";
-import { red } from "@mui/material/colors";
+import { red, cyan, indigo } from "@mui/material/colors";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-function getIcon(doc) {
+const getIcon = (doc) => {
   if (doc?.flowName) {
     return <AnnouncementIcon />;
   } else {
@@ -23,7 +24,47 @@ function getIcon(doc) {
     }
     return <CallReceivedIcon />;
   }
-}
+};
+
+const getDescription = (isMobile, description) => {
+  if (isMobile && description.length > 30) {
+    return description.slice(0, 30) + "...";
+  }
+  return description;
+};
+const getUpdateLabel = (doc) => {
+  if (doc.flowName) {
+    const labelColor = cyan[600];
+    return (
+      <Typography
+        variant="subtitle1"
+        sx={{ fontWeight: "bold", color: labelColor }}
+      >
+        New flow: {doc.friendly_name}
+      </Typography>
+    );
+  } else if (doc.Direction === "outbound") {
+    const labelColor = indigo[500];
+    return (
+      <Typography
+        variant="subtitle1"
+        sx={{ fontWeight: "bold", color: labelColor }}
+      >
+        New message sent by {doc.Organization.organizationName}
+      </Typography>
+    );
+  } else if (doc.Direction === "inbound") {
+    const labelColor = indigo[500];
+    return (
+      <Typography
+        variant="subtitle1"
+        sx={{ fontWeight: "bold", color: labelColor }}
+      >
+        New message received by {doc.Organization.organizationName}
+      </Typography>
+    );
+  }
+};
 
 function StreamError({ error, refetch }) {
   return (
@@ -55,18 +96,18 @@ function StreamError({ error, refetch }) {
   );
 }
 function WhatsAppStreamItem({ doc }) {
-  const { description } = doc;
   const isMobile = useMediaQuery("(max-width:768px)");
-  const getDescription = (isMobile) => {
-    if (isMobile && description.length > 30) {
-      return description.slice(0, 30) + "...";
-    }
-    return description;
-  };
+  const { description, CreatedAt } = doc;
+  const formattedDate = formatFriendlyTimestamp(CreatedAt);
+  const formattedDescription = getDescription(isMobile, description);
   return (
     <ListItem>
       <ListItemIcon>{getIcon(doc)}</ListItemIcon>
-      <Typography variant="body2">{getDescription(isMobile)}</Typography>
+      <Box>
+        <Typography variant="subtitle1">{getUpdateLabel(doc)}</Typography>
+        <Typography variant="body2">{formattedDescription}</Typography>
+        <Typography variant="caption">{formattedDate}</Typography>
+      </Box>
     </ListItem>
   );
 }
