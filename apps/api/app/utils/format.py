@@ -1,4 +1,5 @@
 from datetime import datetime
+from app.utils.dates import convert_timestamp
 from bson import ObjectId
 import os, json
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,8 +24,10 @@ def get_db_change_description(collection_name: str, db_change_document: dict) ->
     """Get a human-readable description of the database change."""
     if collection_name == "flow_history":
         flow_name = db_change_document.get("flowName")
+        flow_start_time=db_change_document.get("CreatedAt")
+        formatted_start_time=convert_timestamp(flow_start_time)
         formatted_flow_name=format_config["flowNames"].get(flow_name)
-        return f"New {formatted_flow_name} flow started"
+        return f"New {formatted_flow_name} flow started at {formatted_start_time}"
     elif collection_name == "messages":
         if db_change_document.get("Direction") == "outbound":
             return f"Outbound message sent to {db_change_document.get('To')} from {db_change_document.get('From')}"

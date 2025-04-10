@@ -101,6 +101,7 @@ export default function WhatsAppStream({ maxHeight }) {
   const { message: changeStreamMessage } = useWebSocket(websocket_url);
 
   const [combinedData, setCombinedData] = useState([]);
+
   useEffect(() => {
     if (prevDbChangeData) {
       setCombinedData(prevDbChangeData.documents || []);
@@ -116,7 +117,7 @@ export default function WhatsAppStream({ maxHeight }) {
       });
     }
   }, [changeStreamMessage]);
-
+  console.log(combinedData);
   return (
     <Card sx={{ height: maxHeight, flexGrow: 1 }}>
       <CardContent

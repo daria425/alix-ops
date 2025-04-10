@@ -11,3 +11,9 @@ def fill_dates(sorted_data:dict):
             })
             current_date+=timedelta(days=1)
         return full_dates
+
+
+def convert_timestamp(timestamp):
+    """Convert a timestamp to a human-readable format."""
+    timestamp=datetime.fromisoformat(timestamp)
+    return timestamp.strftime("%Y-%m-%d %H:%M:%S")

@@ -70,6 +70,16 @@ class WebsocketManager:
                 async for change in stream:
                     logger.info(f"Change detected in {collection_name}: {change}")
                     change["fullDocument"]["description"]= get_db_change_description(collection_name, change["fullDocument"])
+                    change_doc_contact_id=change["fullDocument"].get("ContactId")
+                    change_doc_org_id=change["fullDocument"].get("OrganizationId")
+                    if change_doc_contact_id:
+                        change_contact=await db_service.collection.find_one({"_id": change_doc_contact_id})
+                        if change_contact:
+                            change["fullDocument"]["Contact"]=change_contact
+                    if change_doc_org_id:
+                        change_org=await db_service.collection.find_one({"_id": change_doc_org_id})
+                        if change_org:
+                            change["fullDocument"]["Organization"]=change_org
                     disconnected_clients=[]
                     for client in self.clients:
                         try:

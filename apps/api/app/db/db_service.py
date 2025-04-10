@@ -3,7 +3,7 @@ from app.utils.logger import logger
 from app.utils.dates import fill_dates
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta, timezone
-from pymongo import ReturnDocument
+from pymongo import ReturnDocument, DESCENDING
 from app.utils.format import convert_objectid
 import math
     
@@ -22,7 +22,8 @@ class BaseDatabaseService:
         self.collection = self.db_connection.db[self.collection_name]
 
     async def get_documents_by_timeframe(self, time:int):
-        """Get all documents created in the given timeframe
+        """Get all documents created in the given timeframe and embed related contact and organization data.
+        
         Args:
             time (int): Timeframe in seconds
         """
@@ -30,16 +31,62 @@ class BaseDatabaseService:
         try:
             end_time = datetime.now(timezone.utc)
             start_time = end_time - timedelta(seconds=time)
-            query = {
-                "CreatedAt": {
-                    "$gte": start_time,
-                    "$lte": end_time
+            
+            # MongoDB aggregation pipeline to filter documents within the timeframe
+            # and perform the lookups to include contact and organization details
+            pipeline = [
+                {
+                    "$match": {
+                        "CreatedAt": {
+                            "$gte": start_time,
+                            "$lte": end_time
+                        }
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": "contacts",  # Collection for contacts
+                        "localField": "ContactId",  # Field in the current collection
+                        "foreignField": "_id",  # Field in the 'contacts' collection
+                        "as": "Contact"  # The field to store the contact details
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": "organizations",  # Collection for organizations
+                        "localField": "OrganizationId",  # Field in the current collection
+                        "foreignField": "_id",  # Field in the 'organizations' collection
+                        "as": "Organization"  # The field to store the organization details
+                    }
+                },
+                {
+                    "$unwind": {
+                        "path": "$Contact",
+                        "preserveNullAndEmptyArrays": True  # To keep the document even if no contact found
+                    }
+                },
+                {
+                    "$unwind": {
+                        "path": "$Organization",
+                        "preserveNullAndEmptyArrays": True  # To keep the document even if no organization found
+                    }
                 }
-            }
-            documents = await self.get_all_documents(query)
-            return documents
+            ]
+            cursor = self.collection.aggregate(pipeline)
+            documents = convert_objectid(await cursor.to_list(None))
+            
+            return {
+                "documents": documents,
+                "total_count": len(documents),
+                "page": 1,
+                "page_size": len(documents),
+                "total_pages": 1,
+                "collection": self.collection_name
+        }
+        
         except Exception as e:
-            logger.error(f"Error occurred getting documents by timeframe:{e}")
+            logger.error(f"Error occurred getting documents by timeframe: {e}")
+            return {"documents": [], "total_count": 0, "page": 1, "page_size": 0, "total_pages": 0, "collection": self.collection_name}
     
             
             
@@ -282,7 +329,8 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
         except Exception as e:
             logger.error(f"Error occurred counting flows:{e}")  
     async def get_flows_by_timeframe(self, time:int):
-        """Get all flows started in the given timeframe
+        """Get all flows created in the given timeframe and embed related contact and organization data.
+        
         Args:
             time (int): Timeframe in seconds
         """
@@ -290,19 +338,60 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
         try:
             end_time = datetime.now(timezone.utc)
             start_time = end_time - timedelta(seconds=time)
-            query = {
-                "CreatedAt": {
-                    "$gte": start_time,
-                    "$lte": end_time
+            pipeline = [
+                {
+                    "$match": {
+                        "CreatedAt": {
+                            "$gte": start_time,
+                            "$lte": end_time
+                        },
+                        "flowName": {"$ne": "latency-test"} ,
+                    }
                 },
-                "flowName": {"$ne": "latency-test"}  # Filter out latency-test flows
-            }
-      
-            flows = await self.get_all_documents(query)
-            return flows
+                {
+                    "$lookup": {
+                        "from": "contacts",  # Collection for contacts
+                        "localField": "ContactId",  # Field in the current collection
+                        "foreignField": "_id",  # Field in the 'contacts' collection
+                        "as": "Contact"  # The field to store the contact details
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": "organizations",  # Collection for organizations
+                        "localField": "OrganizationId",  # Field in the current collection
+                        "foreignField": "_id",  # Field in the 'organizations' collection
+                        "as": "Organization"  # The field to store the organization details
+                    }
+                },
+                {
+                    "$unwind": {
+                        "path": "$Contact",
+                        "preserveNullAndEmptyArrays": True  # To keep the document even if no contact found
+                    }
+                },
+                {
+                    "$unwind": {
+                        "path": "$Organization",
+                        "preserveNullAndEmptyArrays": True  # To keep the document even if no organization found
+                    }
+                }
+            ]
+            cursor = self.collection.aggregate(pipeline)
+            documents = convert_objectid(await cursor.to_list(None))
+            print("flows", documents)
+            return {
+                "documents": documents,
+                "total_count": len(documents),
+                "page": 1,
+                "page_size": len(documents),
+                "total_pages": 1,
+                "collection":"flow_history"
+        }
+        
         except Exception as e:
-            logger.error(f"Error occurred getting flows by timeframe:{e}")
-
+            logger.error(f"Error occurred getting flows by timeframe: {e}")
+            return {"documents": [], "total_count": 0, "page": 1, "page_size": 0, "total_pages": 0, "collection":"flow_history"}
 class AlixOpsUserService(AlixOpsDatabaseService):
     def __init__(self):
         super().__init__("users")

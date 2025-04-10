@@ -102,6 +102,7 @@ async def get_whatsapp_activity(timeframe:int=86400, flow_history_db_service: Fl
         
             
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=str(e))
 @router.get("/whatsapp/errors")
 async def get_whatsapp_errors(error_db_service: ErrorDatabaseService=Depends()):
