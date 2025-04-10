@@ -6,7 +6,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TablePagination from "@mui/material/TablePagination";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 export default function CustomTable({
   tableData,
   tableStyle = {},
@@ -20,8 +20,14 @@ export default function CustomTable({
   const { headers, rows } = tableData;
   const rowsPerPage = 5;
   const [page, setPage] = useState(0);
-  const finalHeaders = isMobile ? headers.slice(0, 3) : headers;
-  const finalRows = isMobile ? rows.map((row) => row.slice(0, 3)) : rows;
+  const finalHeaders = useMemo(
+    () => (isMobile ? headers.slice(0, 3) : headers),
+    [isMobile, headers]
+  );
+  const finalRows = useMemo(
+    () => (isMobile ? rows.map((row) => row.slice(0, 3)) : rows),
+    [isMobile, rows]
+  );
   const [visibleRows, setVisibleRows] = useState([]);
   useEffect(() => {
     const startRow = page * rowsPerPage;
