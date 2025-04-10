@@ -1,4 +1,5 @@
 import { useReducer, useContext } from "react";
+import { Box, Typography, Button, TextField, Container } from "@mui/material";
 import { formReducer } from "../../reducers/formReducer";
 import { useNavigate } from "react-router";
 import { AuthContext } from "../../services/AuthProvider";
@@ -36,57 +37,62 @@ export default function LoginForm() {
     }
   };
   return (
-    <div className="auth">
-      <form
-        className="auth__form"
+    <Box sx={{ display: "flex", height: "100vh" }}>
+      <Box
+        component="form"
+        sx={{ minWidth: "30%" }}
         onSubmit={async (e) => {
           handleLogin(e, "email");
         }}
       >
-        <h1 className="auth__heading">Log in</h1>
+        <Typography variant="h1" sx={{ fontSize: "2rem", fontWeight: "bold" }}>
+          Log in
+        </Typography>
         <div className="auth__field">
-          <label htmlFor="email" className="auth__input-label">
-            Email:
-          </label>
-          <input
+          <TextField
             required
             type="text"
             id="email"
+            label="Email"
             name="email"
+            variant="outlined"
             value={state.email}
             onChange={(e) => {
               handleInputChange(e);
             }}
-            className="auth__input"
-          ></input>
-        </div>
-        <div className="auth__field">
-          <label htmlFor="password" className="auth__input-label">
-            Password:
-          </label>
-
-          <input
-            required
-            type="password"
-            id="password"
-            name="password"
-            value={state.password}
-            className="auth__input"
-            onChange={(e) => {
-              handleInputChange(e);
+            sx={{
+              width: "100%",
             }}
-          ></input>
+            className="auth__input"
+          ></TextField>
         </div>
-        <div className="auth__btn-container">
-          <button className="auth__btn" type="submit">
-            Log in
-          </button>
-          <button
-            className="auth__btn auth__btn--google"
-            type="button"
+
+        <TextField
+          label="Password"
+          required
+          type="password"
+          id="password"
+          name="password"
+          value={state.password}
+          className="auth__input"
+          sx={{
+            width: "100%",
+          }}
+          onChange={(e) => {
+            handleInputChange(e);
+          }}
+        ></TextField>
+        <Box sx={{ display: "flex", gap: 2, flexDirection: "column" }}>
+          <Button variant="outlined" color="primary" type="submit">
+            Log In
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
             onClick={(e) => {
               handleLogin(e, "google");
             }}
+            sx={{ display: "flex", gap: 1, alignItems: "center" }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -113,9 +119,18 @@ export default function LoginForm() {
               <path d="M1 1h22v22H1z" fill="none" />
             </svg>
             Log in with Google
-          </button>
-        </div>
-      </form>
-    </div>
+          </Button>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          backgroundImage: `url("/login-bg.svg")`,
+          width: "100%",
+          height: "100%",
+          backgroundSize: "cover", // Optional: This ensures the image covers the container
+          backgroundRepeat: "no-repeat",
+        }}
+      ></Box>
+    </Box>
   );
 }
