@@ -6,7 +6,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TablePagination from "@mui/material/TablePagination";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 export default function CustomTable({
   tableData,
   tableStyle = {},
@@ -18,19 +18,22 @@ export default function CustomTable({
 }) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const { headers, rows } = tableData;
-  console.log("Table Data:", tableData);
+  const rowsPerPage = 5;
+  const [page, setPage] = useState(0);
   const finalHeaders = isMobile ? headers.slice(0, 3) : headers;
   const finalRows = isMobile ? rows.map((row) => row.slice(0, 3)) : rows;
-  const [page, setPage] = useState(0);
-  const rowsPerPage = 5;
-  const [visibleRows, setVisibleRows] = useState(
-    finalRows.slice(0, rowsPerPage)
-  );
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-    const startRow = newPage * rowsPerPage;
+  const [visibleRows, setVisibleRows] = useState([]);
+  useEffect(() => {
+    const startRow = page * rowsPerPage;
     const endRow = startRow + rowsPerPage;
     setVisibleRows(finalRows.slice(startRow, endRow));
+  }, [page, finalRows]);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+    // const startRow = newPage * rowsPerPage;
+    // const endRow = startRow + rowsPerPage;
+    // setVisibleRows(finalRows.slice(startRow, endRow));
   };
 
   if (loading) {
