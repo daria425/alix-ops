@@ -1,4 +1,4 @@
-import { AppBar, Box, Tabs, Tab } from "@mui/material";
+import { AppBar, Box, Tabs, Tab, Container } from "@mui/material";
 import { Outlet, useLocation, Link } from "react-router";
 
 export default function Layout() {
@@ -9,6 +9,15 @@ export default function Layout() {
     { path: "dashboard", label: "Dashboard" },
     { path: "monitoring", label: "Monitoring" },
   ];
+
+  const containerStyle = {
+    "default": {},
+    "monitoring": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": 2,
+    },
+  };
 
   return (
     <Box
@@ -36,7 +45,15 @@ export default function Layout() {
           ))}
         </Tabs>
       </AppBar>
-      <Outlet />
+      <Container
+        maxWidth="xl"
+        sx={{
+          ...(containerStyle[currentPage] || containerStyle["default"]),
+          padding: 2,
+        }}
+      >
+        <Outlet />
+      </Container>
     </Box>
   );
 }
