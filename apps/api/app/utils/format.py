@@ -18,18 +18,30 @@ def convert_objectid(doc):
         return doc.isoformat()
     else:
         return doc
+    
+def clean_phone_number(phone_number):
+    """Remove the 'whatsapp:+' prefix if it exists."""
+    return phone_number.replace("whatsapp:", "") if phone_number else phone_number
 
 
 def get_db_change_description(collection_name: str, db_change_document: dict) -> str:
     """Get a human-readable description of the database change."""
+    contact_name=db_change_document.get("Contact", {}).get("ProfileName")
+    org_name=db_change_document.get("Organization", {}).get("organizationName")
+    created_at=db_change_document.get("CreatedAt")
+    created_at_time=convert_timestamp(created_at, format="%H:%M")
+    created_at_date=convert_timestamp(created_at)
     if collection_name == "flow_history":
         flow_name = db_change_document.get("flowName")
-        flow_start_time=db_change_document.get("CreatedAt")
-        formatted_start_time=convert_timestamp(flow_start_time)
         formatted_flow_name=format_config["flowNames"].get(flow_name)
-        return f"New {formatted_flow_name} flow started at {formatted_start_time}"
+        return f"{org_name}--New {formatted_flow_name} flow started at {created_at_time} on {created_at_date} by {contact_name}"
     elif collection_name == "messages":
         if db_change_document.get("Direction") == "outbound":
-            return f"Outbound message sent to {db_change_document.get('To')} from {db_change_document.get('From')}"
+            service_phone_number=db_change_document.get("Organization", {}).get("organizationPhoneNumber")
+            service_phone_number=clean_phone_number(service_phone_number)
+            return f"{org_name}--Outbound message sent to {contact_name} from {service_phone_number} at {created_at_time} on {created_at_date}"
         elif db_change_document.get("Direction") == "inbound":
-            return f"Inbound message received from {db_change_document.get('From')}"
+            service_phone_number=db_change_document.get("To")
+            service_phone_number=clean_phone_number(service_phone_number)
+            return f"{org_name}--Inbound message received from {contact_name} on {service_phone_number} at {created_at_time} on {created_at_date}"
+

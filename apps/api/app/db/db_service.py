@@ -379,7 +379,6 @@ class FlowHistoryDatabaseService(ControlRoomDatabaseService):
             ]
             cursor = self.collection.aggregate(pipeline)
             documents = convert_objectid(await cursor.to_list(None))
-            print("flows", documents)
             return {
                 "documents": documents,
                 "total_count": len(documents),

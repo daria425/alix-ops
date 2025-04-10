@@ -97,11 +97,11 @@ export default function WhatsAppStream({ maxHeight }) {
     loading,
     fetchError,
     refetch,
-  } = useData("/monitoring/whatsapp/activity", "timeframe=7200");
+  } = useData("/monitoring/whatsapp/activity", "timeframe=86400");
   const { message: changeStreamMessage } = useWebSocket(websocket_url);
 
   const [combinedData, setCombinedData] = useState([]);
-
+  console.log(prevDbChangeData);
   useEffect(() => {
     if (prevDbChangeData) {
       setCombinedData(prevDbChangeData.documents || []);

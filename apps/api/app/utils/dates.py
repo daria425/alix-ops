@@ -13,7 +13,7 @@ def fill_dates(sorted_data:dict):
         return full_dates
 
 
-def convert_timestamp(timestamp):
+def convert_timestamp(timestamp, format="%d%-%m-%Y"):
     """Convert a timestamp to a human-readable format."""
     timestamp=datetime.fromisoformat(timestamp)
-    return timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    return timestamp.strftime(format)
